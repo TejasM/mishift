@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+    <link href="{{ STATIC_URL }}css/jquery.datetimepicker.css" rel="stylesheet">
+{% endblock %}
+{% block outside_container %}
+    <div class="col-lg-12">
+        <div id="calendar"></div>
+    </div>
+    <div class="modal fade" id="add-event-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Add Shift</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" id="event-form" action="" onsubmit="return false;">
+                        <fieldset>
+                            <input type="hidden" value="" name="id" id="hidden_id">
+
+                            <div class="form-group">
+                                <label for="employee" class="col-lg-2 control-label">Employee</label>
+
+                                <div class="col-lg-10">
+                                    <select class="form-control" id="employee" name="employee" required>
+                                        {% for e, f, l in employees %}
+                                            <option value="{{ e }}">{{ f }} {{ l }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputShift" class="col-lg-2 control-label">Shift Title</label>
+
+                                <div class="col-lg-10">
+                                    <input type="text" class="form-control" id="inputShift" placeholder="Shift Title"
+                                           name="shift_title" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputStartTime" class="col-lg-2 control-label">Start Time</label>
+
+                                <div class="col-lg-10">
+                                    <input id="inputStartTime" type="text" name="start_time" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputEndTime" class="col-lg-2 control-label">End Time</label>
+
+                                <div class="col-lg-10">
+                                    <input id="inputEndTime" type="text" name="end_time" required>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="event-add">Add</button>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+{% endblock %}
+{% block extra_js %}
+    <script src="{{ STATIC_URL }}js/jquery.datetimepicker.js"></script>
+    <script>
+        var selected_date;
+        var calendar;
+        var clicked_swap;
+        $(document).ready(function () {
+            $('#event-form').validate();
+            // page is now ready, initialize the calendar...
+            calendar = $('#calendar');
+            calendar.fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'basicWeek,basicDay'
+                },
+                defaultView: 'basicWeek',
+                eventLimit: true,
+                eventRender: function (event, element) {
+                    if (event.end) {
+                        $(element).find('.fc-time').text(event.start.format('h:mm a') + '-' + event.end.format('h:mm a'));
+                    }
+                    if (event.user_id == {{ user.id }}) {
+                        if (!event.to_swap) {
+                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
+                        } else {
+                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
+                        }
+                    }
+                },
+                {% if user.userprofile.is_admin %}
+                    eventClick: function (calEvent, jsEvent, view) {
+                        $('#add-event-modal').modal('show');
+                        $('#employee').find('option[value=' + calEvent.user_id + ']').prop('selected', true);
+                        $('#inputShift').val(calEvent.title.split(' - ')[0]);
+                        $('#inputStartTime').val(calEvent.start.format('YYYY-MM-DD h:mm a'));
+                        $('#inputEndTime').val(calEvent.end.format('YYYY-MM-DD h:mm a'));
+                        $('#hidden_id').val(calEvent.id);
+                        $('#event-add').text('Update Event');
+                    },
+                {% endif %}
+                events: [
+                    {% for e in events %}
+                        {
+                            id: {{ e.id }},
+                            title: "{{ e.event_text }} - {{ e.belongs_to.get_full_name }}",
+                            start: "{{ e.start_date|date:'Y-m-d H:i' }}",
+                            end: "{{ e.end_date|date:'Y-m-d H:i' }}",
+                            user_id: {{ e.belongs_to.id }},
+                            to_swap: {{ e.requested_swap|yesno:"true,false" }}
+                        },
+                    {% endfor %}
+                ]
+            });
+            {% if user.userprofile.is_admin %}
+                $('.fc-day').append('<p class="add-event">+</p>');
+                $('body').on('click', '.add-event', function () {
+                    $('#add-event-modal').modal('show');
+                    $('#inputShift').val('');
+                    $('#hidden_id').val('');
+                    $('#inputStartTime').val($(this).closest('.fc-day').data('date'));
+                    $('#inputEndTime').val($(this).closest('.fc-day').data('date'));
+                    $('#event-add').text('Add Event');
+                });
+                $('#event-add').click(function () {
+                    var $form = $('#event-form');
+                    if ($form.validate().element('#employee') &&
+                            $form.validate().element('#inputShift') &&
+                            $form.validate().element('#inputStartTime') &&
+                            $form.validate().element('#inputEndTime')) {
+                        $.post('{% url 'dashboard:event' %}', {
+                            user: $('#employee').val(),
+                            id: $('#hidden_id').val(),
+                            text: $('#inputShift').val(),
+                            start_date: $('#inputStartTime').val().replace(/\//g, '-'),
+                            end_date: $('#inputEndTime').val().replace(/\//g, '-'),
+                        }, function (data) {
+                            addEvent(data['id'], data['title'], data['start'], data['end']);
+                            $('#add-event-modal').modal('hide');
+                        });
+                    }
+                });
+                $('#inputStartTime').datetimepicker({
+                });
+                $('#inputEndTime').datetimepicker({
+                });
+            {% endif %}
+            $('.mdi-notification-sync').click(function (event) {
+                event.stopPropagation();
+                clicked_swap = $(this);
+                $.post('{% url 'dashboard:to_swap' %}', {'id': $(this).data('id')}, function () {
+                    clicked_swap.toggleClass('swapped');
+                });
+            });
+        });
+        function addEvent(id, title, start, end) {
+            calendar.fullCalendar('addEventSource', {
+                events: [
+                    {
+                        id: id,
+                        title: title,
+                        start: start,
+                        end: end,
+                    }
+                ]
+            });
+        }
+    </script>
+{% endblock %}

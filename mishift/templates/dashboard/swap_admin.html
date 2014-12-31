@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+    <link href="{{ STATIC_URL }}css/jquery.datetimepicker.css" rel="stylesheet">
+{% endblock %}
+{% block page_title %}Swap Pool{% endblock %}
+{% block content %}
+    <div class="col-lg-6">
+        <h2>Agreed Swaps</h2>
+
+        <div class="list-group">
+            {% for s in agreed_swaps %}
+                <div class="list-group-item">
+                    <div class="row-action-primary">
+                        <i>SWAP</i>
+                    </div>
+                    <div class="row-content">
+                        <div class="action-secondary"><i class="mdi-material-info"></i></div>
+                        <h4 class="list-group-item-heading">{{ s.event_text }} - {{ s.belongs_to.get_full_name }}</h4>
+
+                        <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
+                            - {{ s.end_date|date:'Y-m-d H:i' }}</p>
+                        <h4>with</h4>
+                        <h4 class="list-group-item-heading">{{ s.agreed_swap.event_text }}
+                            - {{ s.agreed_swap.belongs_to.get_full_name }}</h4>
+
+                        <p class="list-group-item-text">{{ s.agreed_swap.start_date|date:'Y-m-d H:i' }}
+                            - {{ s.agreed_swap.end_date|date:'Y-m-d H:i' }}</p>
+                        <button class="btn btn-success approve-swap" data-id="{{ s.id }}">Approve Swap
+                        </button>
+                    </div>
+                </div>
+                {% if not forloop.last %}
+                    <div class="list-group-separator"></div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <h2>Agreed Transfers</h2>
+
+        <p>Coming Soon</p>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        var to_swap;
+        $(function () {
+            $('.approve-swap').click(function () {
+                $.post('{% url 'dashboard:approve_swap' %}', {'id': $(this).data('id')}, function () {
+                    location.reload();
+                });
+            });
+        });
+    </script>
+{% endblock %}

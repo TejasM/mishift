@@ -1,0 +1,42 @@
+/*! project specific CSS goes here. */
+body {
+    padding-top: 100px;
+}
+
+.navbar-2 {
+    margin-top: 50px;
+}
+
+.navbar-2 .navbar-nav {
+    display: inline-block;
+    float: none;
+}
+
+.add-event {
+    bottom: 0;
+    cursor: pointer;
+    position: absolute;
+    text-align: center;
+    font-size: 15px;
+    margin-left: 7%;
+    z-index: 1000;
+}
+
+.fc-options {
+    margin-right: 10px;
+    float: right;
+    font-size: 200%;
+}
+
+.fc-day-grid-event {
+    cursor: pointer;
+}
+
+.mdi-notification-sync {
+    cursor: pointer;
+}
+
+.mdi-notification-sync.swapped {
+    cursor: pointer;
+    color: green;
+}
