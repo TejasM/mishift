@@ -82,9 +82,17 @@
                 header: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'basicWeek,basicDay'
+                    {% if user.userprofile.is_admin %}
+                        right: 'month,basicWeek,basicDay'
+                    {% else %}
+                        right: 'basicWeek,basicDay'
+                    {% endif %}
                 },
-                defaultView: 'basicWeek',
+                {% if user.userprofile.is_admin %}
+                    defaultView: 'month',
+                {% else %}
+                    defaultView: 'basicWeek',
+                {% endif %}
                 eventLimit: true,
                 eventRender: function (event, element) {
                     if (event.end) {
