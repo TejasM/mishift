@@ -17,7 +17,7 @@ migrations/
 .project
 .pydevproject
 .settings
-
+.idea/
 # Linux Editors
 *~
 \#*\#
