@@ -50,7 +50,7 @@ EMAIL_USE_TLS = True
 SERVER_EMAIL = EMAIL_HOST_USER
 # ######### END EMAIL CONFIGURATION
 INTERNAL_IPS = ('158.85.76.197',)
-########## DATABASE CONFIGURATION
+# ######### DATABASE CONFIGURATION
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -63,7 +63,7 @@ DATABASES = {
 }
 ########## END DATABASE CONFIGURATION
 
-
+STATIC_ROOT = '/home/tmehta/mishift/staticfiles/'
 ########## CACHE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#caches
 CACHES = {
