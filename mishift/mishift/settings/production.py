@@ -21,7 +21,7 @@ def get_env_setting(setting):
 
 # ######### HOST CONFIGURATION
 # See: https://docs.djangoproject.com/en/1.5/releases/1.5/#allowed-hosts-required-in-production
-ALLOWED_HOSTS = ['mishift.com', 'www.mishift.com', '158.85.76.197']
+ALLOWED_HOSTS = ['mishift.ca', 'www.mishift.ca', '127.0.0.1']
 # ######### END HOST CONFIGURATION
 
 # ######### EMAIL CONFIGURATION
@@ -48,7 +48,7 @@ EMAIL_USE_TLS = True
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = EMAIL_HOST_USER
-########## END EMAIL CONFIGURATION
+# ######### END EMAIL CONFIGURATION
 INTERNAL_IPS = ('158.85.76.197',)
 ########## DATABASE CONFIGURATION
 DATABASES = {
