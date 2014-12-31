@@ -49,7 +49,7 @@ EMAIL_USE_TLS = True
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = EMAIL_HOST_USER
 ########## END EMAIL CONFIGURATION
-
+INTERNAL_IPS = ('158.85.76.197',)
 ########## DATABASE CONFIGURATION
 DATABASES = {
     'default': {
