@@ -131,6 +131,7 @@
         var calendar;
         var to_swap;
         var clicked_swap;
+        var calendar_event;
         $(document).ready(function () {
             $('#event-form').validate();
             // page is now ready, initialize the calendar...
@@ -162,12 +163,13 @@
                 {% if user.userprofile.is_admin %}
                     eventClick: function (calEvent, jsEvent, view) {
                         $('#add-event-modal').modal('show');
-                        $('#employee').find('option[value=' + calEvent.user_id + ']').prop('selected', true);
+                        $('#employee').val(calEvent.user_id);
                         $('#inputShift').val(calEvent.title.split(' - ')[0]);
-                        $('#inputStartTime').val(calEvent.start.format('YYYY-MM-DD h:mm a'));
-                        $('#inputEndTime').val(calEvent.end.format('YYYY-MM-DD h:mm a'));
+                        $('#inputStartTime').val(calEvent.start.format('YYYY-MM-DD HH:mm'));
+                        $('#inputEndTime').val(calEvent.end.format('YYYY-MM-DD HH:mm'));
                         $('#hidden_id').val(calEvent.id);
                         $('#event-add').text('Update Event');
+                        calendar_event = calEvent;
                     },
                 {% endif %}
                 events: [
@@ -206,8 +208,15 @@
                             start_date: $('#inputStartTime').val().replace(/\//g, '-'),
                             end_date: $('#inputEndTime').val().replace(/\//g, '-'),
                         }, function (data) {
-                            addEvent(data['id'], data['title'], data['start'], data['end']);
-                            $('#add-event-modal').modal('hide');
+                            if ($('#hidden_id').val() == '') {
+                                addEvent(data['id'], data['title'], data['start'], data['end']);
+                                $('#add-event-modal').modal('hide');
+                            } else {
+                                calendar_event.title = $('#inputShift').val();
+                                calendar_event.start_date = data['start'];
+                                calendar_event.end_date = data['end'];
+                                $('#calendar').fullCalendar('updateEvent', calendar_event);
+                            }
                         });
                     }
                 });

@@ -132,8 +132,8 @@ def create_event(request):
             event = Event.objects.create(event_text=event_text, belongs_to=User.objects.get(pk=user_id),
                                          start_date=start_date, end_date=end_date)
         else:
-            event = Event.objects.get(pk=request.POST['is'])
-            event.event_text = request.POST['title']
+            event = Event.objects.get(pk=request.POST['id'])
+            event.event_text = request.POST['text']
             event.start_date = request.POST['start_date']
             event.end_date = request.POST['end_date']
             event.belongs_to = User.objects.get(pk=request.POST['user'])
