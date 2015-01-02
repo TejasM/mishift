@@ -4,158 +4,70 @@
 {% endblock %}
 {% block page_title %}Swap Pool{% endblock %}
 {% block content %}
-    <div class="col-lg-4">
-        <h2>Your Shifts Up For Swap</h2>
-
-        <div class="list-group">
+    <div class="col-lg-6">
+        <h2>Your Proposed Trades</h2>
+        <ul class="nav nav-pills nav-stacked list-group">
             {% for s in my_swaps %}
-                <div class="list-group-item">
-                    <div class="row-action-primary">
-                        <i>{{ s.event_text }}</i>
-                    </div>
-                    <div class="row-content">
-                        <div class="action-secondary"><i class="mdi-material-info"></i></div>
-                        <h4 class="list-group-item-heading">{{ s.belongs_to.get_full_name }}</h4>
+                <li class="{% if forloop.first %}active{% endif %}">
+                    <a href="#swap-{{ s.id }}" data-toggle="tab">
+                        <div class="list-group-item">
+                            <div class="row-action-primary">
+                                <i>{{ s.event_text }}</i>
+                            </div>
+                            <div class="row-content">
+                                <div class="action-secondary"><i class="mdi-material-info"></i></div>
+                                <h4 class="list-group-item-heading">{{ s.belongs_to.get_full_name }}</h4>
 
-                        <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
-                            - {{ s.end_date|date:'Y-m-d H:i' }}</p>
-                        {% if s.to_swap_events.count != 0 %}
-                            {% if s.agreed_swap %}
-                                <p>Agreed to:</p>
-                                <h5>{{ s.agreed_swap.belongs_to.get_full_name }}</h5>
-                                <small>{{ s.agreed_swap.start_date|date:'Y-m-d H:i' }}
-                                    - {{ s.agreed_swap.end_date|date:'Y-m-d H:i' }}</small>
-                                <button class="btn btn-danger cancel-swap" data-id="{{ s.id }}">Cancel Swap</button>
-                            {% else %}
-                                <p>Offered Swaps:</p>
-                                {% for e in s.to_swap_events.all %}
-                                    <h5>{{ e.belongs_to.get_full_name }}</h5>
-                                    <small>{{ e.start_date|date:'Y-m-d H:i' }}
-                                        - {{ e.end_date|date:'Y-m-d H:i' }}</small>
-                                    <button class="btn btn-default agree-swap" data-id="{{ s.id }}"
-                                            data-to-id="{{ e.id }}">Agree to swap
-                                    </button>
-                                {% endfor %}
-                            {% endif %}
+                                <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
+                                    - {{ s.end_date|date:'Y-m-d H:i' }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="col-lg-6">
+    <h2>Trades Proposed For Shift</h2>
+    <div id="myTabContent" class="tab-content">
+        {% for s in my_swaps %}
+            <div class="tab-pane fade {% if forloop.first %}active in{% endif %}" id="swap-{{ s.id }}">
+                {% if s.to_swap_events.count != 0 %}
+                    {% if s.agreed_swap %}
+                        <p>Agreed to:</p>
+                        <h5>{{ s.agreed_swap.belongs_to.get_full_name }}</h5>
+                        <small>{{ s.agreed_swap.start_date|date:'Y-m-d H:i' }}
+                            - {{ s.agreed_swap.end_date|date:'Y-m-d H:i' }}</small>
+                        <br>
+                        {% if s.agreed_swap.agreed_swap == s %}
+                            <p>Waiting for approval</p>
                         {% else %}
-                            <p class="list-group-item-text">No Offered Swaps Yet</p>
+                            <p>Waiting for {{ s.agreed_swap.belongs_to.get_full_name }} to agree.</p>
                         {% endif %}
-                    </div>
-                </div>
-                {% if not forloop.last %}
-                    <div class="list-group-separator"></div>
+                        <button class="btn btn-danger cancel-swap" data-id="{{ s.id }}">Cancel Swap</button>
+                    {% else %}
+                        <p>Offered Swaps:</p>
+                        {% for e in s.to_swap_events.all %}
+                            <h5>{{ e.belongs_to.get_full_name }}</h5>
+                            <small>{{ e.start_date|date:'Y-m-d H:i' }}
+                                - {{ e.end_date|date:'Y-m-d H:i' }}</small>
+                            <br>
+                            <button class="btn btn-success agree-swap" data-id="{{ s.id }}"
+                                    data-to-id="{{ e.id }}">Agree to swap
+                            </button>
+                        {% endfor %}
+                    {% endif %}
+                {% else %}
+                    <p class="list-group-item-text">No Offered Swaps Yet</p>
                 {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <h2>Available Swaps</h2>
-
-        <div class="list-group">
-            {% for s in other_swaps %}
-                <div class="list-group-item">
-                    <div class="row-action-primary">
-                        <i>{{ s.event_text }}</i>
-                    </div>
-                    <div class="row-content">
-                        <div class="action-secondary"><i class="mdi-material-info"></i></div>
-                        <h4 class="list-group-item-heading">{{ s.belongs_to.get_full_name }}</h4>
-
-                        <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
-                            - {{ s.end_date|date:'Y-m-d H:i' }}</p>
-                        <button class="btn btn-default swap-shift" data-id="{{ s.id }}"
-                                data-text="{{ s.event_text }} for {{ s.belongs_to.get_full_name }}: {{ s.start_date|date:'Y-m-d H:i' }}
-                            - {{ s.end_date|date:'Y-m-d H:i' }}">See Swap Options
-                        </button>
-                    </div>
-                </div>
-                {% if not forloop.last %}
-                    <div class="list-group-separator"></div>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-    <div class="col-lg-4">
-        <h2>Available Transfers</h2>
-
-        <p>Coming Soon</p>
-    </div>
-    <div class="modal fade" id="swap-event-modal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Swap Shift</h4>
-                </div>
-                <div class="modal-body">
-                    <p class="text-center" id="shift_switch_with"></p>
-
-                    <form class="form-horizontal" id="event-form" action="" onsubmit="return false;">
-                        <fieldset>
-                            <input type="hidden" value="" name="id" id="hidden_id">
-
-                            <div class="form-group">
-                                <label for="swap-shift" class="col-lg-2 control-label">Your Shift To Swap:</label>
-
-                                <div class="col-lg-10">
-                                    <select class="form-control" id="swap-shift" name="swap" required>
-                                        {% for e in my_shifts %}
-                                            <option value="{{ e.id }}">{{ e.event_text }}: {{ e.start_date|date:'Y-m-d H:i' }}
-                                                - {{ e.end_date|date:'Y-m-d H:i' }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-primary" id="event-swap">Swap Shift</button>
-                            </div>
-                        </fieldset>
-                    </form>
-                </div>
-
             </div>
-            <!-- /.modal-content -->
-        </div>
-        <!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-
-    <div class="modal fade" id="swap-confirm">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Swap Sent</h4>
-                </div>
-                <div class="modal-body">
-                    <p>Your Swap suggestion was successfully sent!</p>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 {% endblock %}
 {% block extra_js %}
     <script>
         var to_swap;
         $(function () {
-            $('.swap-shift').click(function () {
-                $('#shift_switch_with').text($(this).data('text'));
-                $('#hidden_id').val($(this).data('id'));
-                $('#swap-event-modal').modal('show');
-                to_swap = $(this);
-            });
-
-            $('#event-swap').click(function () {
-                $.post('{% url 'dashboard:pick_swap' %}', {'id': $('#hidden_id').val(), 'to_id': $('#swap-shift').val()}, function () {
-                    to_swap.hide();
-                    $('#swap-event-modal').modal('hide');
-                    $('#swap-confirm').modal('show');
-                });
-            });
-
             $('.agree-swap').click(function () {
                 $.post('{% url 'dashboard:agree_swap' %}', {'id': $(this).data('id'), 'to_id': $(this).data('to-id')}, function () {
                     location.reload();

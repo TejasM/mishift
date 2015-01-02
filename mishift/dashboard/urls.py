@@ -5,6 +5,7 @@ urlpatterns = patterns('',
                        url(r'^login/$', views.login_user, name='login'),
                        url(r'^sign_up/$', views.sign_up, name='signup'),
                        url(r'^main/$', views.main, name='main'),
+                       url(r'^posted_shifts/$', views.see_posted_shifts, name='posted_shifts'),
                        url(r'^swap/$', views.swap_page, name='swap_page'),
 
                        url(r'^create_event/$', views.create_event, name='event'),

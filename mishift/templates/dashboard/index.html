@@ -67,12 +67,69 @@
         </div>
         <!-- /.modal-dialog -->
     </div><!-- /.modal -->
+    <div class="modal fade" id="swap-event-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Swap Shift</h4>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center" id="shift_switch_with"></p>
+
+                    <form class="form-horizontal" id="event-form" action="" onsubmit="return false;">
+                        <fieldset>
+                            <input type="hidden" value="" name="id" id="hidden_id">
+
+                            <div class="form-group">
+                                <label for="swap-shift" class="col-lg-2 control-label">Your Shift To Swap:</label>
+
+                                <div class="col-lg-10">
+                                    <select class="form-control" id="swap-shift" name="swap" required>
+                                        {% for e in my_shifts %}
+                                            <option value="{{ e.id }}">{{ e.event_text }}: {{ e.start_date|date:'Y-m-d H:i' }}
+                                                - {{ e.end_date|date:'Y-m-d H:i' }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="event-swap">Swap Shift</button>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="modal fade" id="swap-confirm">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Swap Sent</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Your Swap suggestion was successfully sent!</p>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block extra_js %}
     <script src="{{ STATIC_URL }}js/jquery.datetimepicker.js"></script>
     <script>
         var selected_date;
         var calendar;
+        var to_swap;
         var clicked_swap;
         $(document).ready(function () {
             $('#event-form').validate();
@@ -82,27 +139,23 @@
                 header: {
                     left: 'prev,next today',
                     center: 'title',
-                    {% if user.userprofile.is_admin %}
-                        right: 'month,basicWeek,basicDay'
-                    {% else %}
-                        right: 'basicWeek,basicDay'
-                    {% endif %}
+                    right: 'month,basicWeek,basicDay'
                 },
-                {% if user.userprofile.is_admin %}
-                    defaultView: 'month',
-                {% else %}
-                    defaultView: 'basicWeek',
-                {% endif %}
+                defaultView: 'month',
                 eventLimit: true,
                 eventRender: function (event, element) {
                     if (event.end) {
                         $(element).find('.fc-time').text(event.start.format('h:mm a') + '-' + event.end.format('h:mm a'));
                     }
-                    if (event.user_id == {{ user.id }}) {
-                        if (!event.to_swap) {
-                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
+                    if (!event.to_swap) {
+                        if (event.user_id == {{ user.id }}) {
+                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
+                        }
+                    } else {
+                        if (event.user_id == {{ user.id }}) {
+                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
                         } else {
-                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
+                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-swap-calls swapped"></i></span>');
                         }
                     }
                 },
@@ -121,7 +174,7 @@
                     {% for e in events %}
                         {
                             id: {{ e.id }},
-                            title: "{{ e.event_text }} - {{ e.belongs_to.get_full_name }}",
+                            title: "{{ e.event_text }} for {{ e.belongs_to.get_full_name }}",
                             start: "{{ e.start_date|date:'Y-m-d H:i' }}",
                             end: "{{ e.end_date|date:'Y-m-d H:i' }}",
                             user_id: {{ e.belongs_to.id }},
@@ -166,9 +219,27 @@
             $('.mdi-notification-sync').click(function (event) {
                 event.stopPropagation();
                 clicked_swap = $(this);
-                $.post('{% url 'dashboard:to_swap' %}', {'id': $(this).data('id')}, function () {
-                    clicked_swap.toggleClass('swapped');
-                });
+                if ($(this).data('user-id') == {{ user.id }}) {
+                    $.post('{% url 'dashboard:to_swap' %}', {'id': $(this).data('id')}, function () {
+                        clicked_swap.toggleClass('swapped');
+                    });
+                } else {
+
+                }
+            });
+            $('.mdi-communication-swap-calls').click(function () {
+                $('#shift_switch_with').text($(this).data('text'));
+                $('#hidden_id').val($(this).data('id'));
+                $('#swap-event-modal').modal('show');
+                to_swap = $(this);
+            });
+        });
+
+        $('#event-swap').click(function () {
+            $.post('{% url 'dashboard:pick_swap' %}', {'id': $('#hidden_id').val(), 'to_id': $('#swap-shift').val()}, function () {
+                to_swap.hide();
+                $('#swap-event-modal').modal('hide');
+                $('#swap-confirm').modal('show');
             });
         });
         function addEvent(id, title, start, end) {

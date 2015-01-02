@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block html_extra %}style="height: 100%;"{% endblock %}
+{% block body_extra %}style="height: 100%; padding-top: 0"{% endblock %}
+{% block outside_container %}
+    <div style="height: 100%;width: 100%; background: url({{ STATIC_URL }}images/Medicine.png) no-repeat top fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;">
+        <div style="height: 100%;width: 100%; background: rgba(0, 0, 0, 0.3); position:absolute;z-index: 5;
+                -webkit-background-size: cover;
+                -moz-background-size: cover;
+                -o-background-size: cover;
+                background-size: cover;">
+        </div>
+        <div class="text-center" style="position: relative; z-index: 10;
+              top: 50%;
+              -webkit-transform: translateY(-50%);
+              -ms-transform: translateY(-50%);
+              transform: translateY(-50%);">
+            <a href="{% url 'dashboard:signup' %}">
+                <button class="btn btn-primary" style="font-size: 3em; z-index: 10">GET STARTED</button>
+            </a>
+        </div>
+    </div>
+
+{% endblock %}

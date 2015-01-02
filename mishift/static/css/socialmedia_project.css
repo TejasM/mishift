@@ -22,6 +22,10 @@ body {
     z-index: 1000;
 }
 
+.fc-content {
+    padding: 10px 5px;
+}
+
 .fc-options {
     margin-right: 10px;
     float: right;

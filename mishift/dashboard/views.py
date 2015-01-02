@@ -1,9 +1,10 @@
 import json
+from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.db import DataError
+from django.db import DataError, IntegrityError
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -26,6 +27,7 @@ def login_user(request):
             else:
                 pass
         else:
+            messages.error(request, 'Incorrect Username/Password')
             return redirect(reverse('dashboard:login'))
     else:
         if request.user.is_authenticated():
@@ -41,10 +43,14 @@ def sign_up(request):
         last_name = request.POST.get('last_name', '')
         organization = request.POST.get('organization', 'UHN')
         qualification = request.POST.get('qualification', 'RN')
+        if username == '' or password == '' or first_name == '' or last_name == '':
+            messages.error(request, 'Please fill out all the credentials correctly')
+            return redirect(reverse('dashboard:signup'))
         try:
             user = User.objects.create(username=username, email=username, first_name=first_name, last_name=last_name)
             UserProfile.objects.create(user=user, organization=organization, qualification=qualification)
-        except DataError:
+        except (DataError, IntegrityError):
+            messages.error(request, 'Please fill out all the credentials correctly')
             return redirect(reverse('dashboard:signup'))
         user.set_password(password)
         user.save()
@@ -72,8 +78,12 @@ def main(request):
             organization=request.user.userprofile.organization, role='employee').values_list('user__id',
                                                                                              'user__first_name',
                                                                                              'user__last_name')
-    context['events'] = Event.objects.filter(
-        belongs_to__userprofile__organization=request.user.userprofile.organization)
+        context['events'] = Event.objects.filter(
+            belongs_to__userprofile__organization=request.user.userprofile.organization)
+    else:
+        my_shifts = Event.objects.filter(
+            belongs_to__userprofile__organization=request.user.userprofile.organization).filter(belongs_to=request.user)
+        context['events'] = my_shifts
     return render(request, 'dashboard/index.html', context)
 
 
@@ -82,7 +92,12 @@ def swap_page(request):
     context = {}
     events = Event.objects.filter(belongs_to__userprofile__organization=request.user.userprofile.organization)
     if request.user.userprofile.is_admin:
-        context['agreed_swaps'] = events.filter(~Q(agreed_swap=None))
+        potential_agreed_swaps = list(events.filter(~Q(agreed_swap=None)))
+        agreed_swaps = set()
+        for s in potential_agreed_swaps:
+            if s.agreed_swap.agreed_swap == s and s not in agreed_swaps:
+                agreed_swaps.add(s.id)
+        context['agreed_swaps'] = Event.objects.filter(pk__in=list(agreed_swaps))
         return render(request, 'dashboard/swap_admin.html', context)
     else:
         my_shifts = events.filter(belongs_to=request.user)
@@ -92,6 +107,18 @@ def swap_page(request):
         context['other_swaps'] = events.filter(~Q(belongs_to=request.user)).filter(requested_swap=True)
         context['other_transfers'] = events.filter(~Q(belongs_to=request.user)).filter(requested_transfer=True)
         return render(request, 'dashboard/swap.html', context)
+
+
+@login_required()
+def see_posted_shifts(request):
+    context = {}
+    swap_shifts = Event.objects.filter(~Q(belongs_to=request.user)).filter(
+        belongs_to__userprofile__organization=request.user.userprofile.organization, requested_swap=True)
+    context['events'] = swap_shifts
+    my_shifts = Event.objects.filter(belongs_to__userprofile__organization=request.user.userprofile.organization,
+                                     belongs_to=request.user)
+    context['my_shifts'] = my_shifts
+    return render(request, 'dashboard/index.html', context)
 
 
 @csrf_exempt
@@ -135,6 +162,9 @@ def pick_swap(request):
         e = Event.objects.get(pk=event_id)
         to_event_id = request.POST['to_id']
         to_event = Event.objects.get(pk=to_event_id)
+        to_event.requested_swap = True
+        to_event.to_swap_events.add(e)
+        to_event.save()
         e.to_swap_events.add(to_event)
         e.save()
     return HttpResponse()

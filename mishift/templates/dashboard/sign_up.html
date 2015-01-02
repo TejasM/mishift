@@ -2,6 +2,12 @@
 {% block content %}
     <div class="row">
         <div class="col-lg-8 col-lg-offset-2 col-md-12">
+            {% for m in messages %}
+                <div class="alert alert-dismissable alert-success">
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    <strong>{{ m }}</strong>.
+                </div>
+            {% endfor %}
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h3 class="panel-title">Sign Up</h3>
