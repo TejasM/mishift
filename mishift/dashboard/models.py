@@ -14,14 +14,11 @@ class Event(models.Model):
     approved_swap = models.BooleanField(default=False)
 
     requested_transfer = models.BooleanField(default=False)
+    agreed_transfer = models.ForeignKey('Event', related_name='to_transfer_agree', default=None, null=True, blank=True)
     approved_transfer = models.BooleanField(default=False)
 
     to_swap_events = models.ManyToManyField('Event', default=None, null=True, blank=True)
     to_change_user = models.ForeignKey(User, related_name='transfer_events', default=None, null=True, blank=True)
-
-    @property
-    def transfer_check(self):
-        return self.requested_transfer and not self.to_change_user
 
 
 class UserProfile(models.Model):
