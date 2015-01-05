@@ -38,7 +38,29 @@
     <div class="col-lg-6">
         <h2>Agreed Transfers</h2>
 
-        <p>Coming Soon</p>
+        <div class="list-group">
+            {% for s in agreed_transfers %}
+                <div class="list-group-item">
+                    <div class="row-action-primary">
+                        <i>T</i>
+                    </div>
+                    <div class="row-content">
+                        <div class="action-secondary"><i class="mdi-material-info"></i></div>
+                        <h3>Transfer of:</h3>
+                        <h4 class="list-group-item-heading">{{ s.event_text }}</h4>
+
+                        <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
+                            - {{ s.end_date|date:'Y-m-d H:i' }}</p>
+                        <h4>from {{ s.belongs_to.get_full_name }} to {{ s.to_change_user.get_full_name }}</h4>
+                        <button class="btn btn-success approve-transfer" data-id="{{ s.id }}">Approve Transfer
+                        </button>
+                    </div>
+                </div>
+                {% if not forloop.last %}
+                    <div class="list-group-separator"></div>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}
 {% block extra_js %}
@@ -47,6 +69,11 @@
         $(function () {
             $('.approve-swap').click(function () {
                 $.post('{% url 'dashboard:approve_swap' %}', {'id': $(this).data('id')}, function () {
+                    location.reload();
+                });
+            });
+            $('.approve-transfer').click(function () {
+                $.post('{% url 'dashboard:approve_transfer' %}', {'id': $(this).data('id')}, function () {
                     location.reload();
                 });
             });

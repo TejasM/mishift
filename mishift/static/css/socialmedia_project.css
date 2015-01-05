@@ -44,3 +44,21 @@ body {
     cursor: pointer;
     color: green;
 }
+
+.mdi-communication-call-made {
+    cursor: pointer;
+}
+
+.mdi-communication-call-made.swapped {
+    cursor: pointer;
+    color: green;
+}
+
+.mdi-communication-call-received {
+    cursor: pointer;
+}
+
+.mdi-communication-call-received.swapped {
+    cursor: pointer;
+    color: green;
+}

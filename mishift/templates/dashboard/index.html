@@ -108,7 +108,34 @@
         </div>
         <!-- /.modal-dialog -->
     </div><!-- /.modal -->
+    <div class="modal fade" id="transfer-event-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Transfer Shift</h4>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center" id="shift_transfer_with"></p>
 
+                    <form class="form-horizontal" id="transfer-event-form" action="" onsubmit="return false;">
+                        <fieldset>
+                            <input type="hidden" value="" name="id" id="transfer_hidden_id">
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="event-transfer">Pickup Shift</button>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
     <div class="modal fade" id="swap-confirm">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -123,14 +150,31 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="transfer-confirm">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Pickup Request Sent</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Your Shift Pickup Request was successfully sent!</p>
+
+                    <p>Once your administrator approves the shift will be added to your schedule</p>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block extra_js %}
     <script src="{{ STATIC_URL }}js/jquery.datetimepicker.js"></script>
     <script>
         var selected_date;
         var calendar;
-        var to_swap;
-        var clicked_swap;
+        var to_swap, to_transfer;
+        var clicked_swap, clicked_transfer;
         var calendar_event;
         $(document).ready(function () {
             $('#event-form').validate();
@@ -150,15 +194,28 @@
                     }
                     if (!event.to_swap) {
                         if (event.user_id == {{ user.id }}) {
-                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
+                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
                         }
                     } else {
                         if (event.user_id == {{ user.id }}) {
-                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
+                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
                         } else {
-                            $(element).find('.fc-title').after('<br><br><span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-swap-calls swapped"></i></span>');
+                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-swap-calls swapped"></i></span>');
                         }
                     }
+
+                    if (!event.to_transfer) {
+                        if (event.user_id == {{ user.id }}) {
+                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made"></i></span>');
+                        }
+                    } else {
+                        if (event.user_id == {{ user.id }}) {
+                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made swapped"></i></span>');
+                        } else {
+                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-received"></i></span>');
+                        }
+                    }
+                    $(element).find('.fc-title').after('<br>');
                 },
                 {% if user.userprofile.is_admin %}
                     eventClick: function (calEvent, jsEvent, view) {
@@ -180,7 +237,8 @@
                             start: "{{ e.start_date|date:'Y-m-d H:i' }}",
                             end: "{{ e.end_date|date:'Y-m-d H:i' }}",
                             user_id: {{ e.belongs_to.id }},
-                            to_swap: {{ e.requested_swap|yesno:"true,false" }}
+                            to_swap: {{ e.requested_swap|yesno:"true,false" }},
+                            to_transfer: {{ e.transfer_check|yesno:"true,false" }},
                         },
                     {% endfor %}
                 ]
@@ -236,11 +294,31 @@
 
                 }
             });
+
+            $('.mdi-communication-call-made').click(function (event) {
+                event.stopPropagation();
+                clicked_transfer = $(this);
+                if ($(this).data('user-id') == {{ user.id }}) {
+                    $.post('{% url 'dashboard:to_transfer' %}', {'id': $(this).data('id')}, function () {
+                        clicked_transfer.toggleClass('swapped');
+                    });
+                } else {
+
+                }
+            });
+
             $('.mdi-communication-swap-calls').click(function () {
                 $('#shift_switch_with').text($(this).data('text'));
                 $('#hidden_id').val($(this).data('id'));
                 $('#swap-event-modal').modal('show');
                 to_swap = $(this);
+            });
+
+            $('.mdi-communication-call-received').click(function () {
+                $('#shift_transfer_with').text($(this).data('text'));
+                $('#transfer_hidden_id').val($(this).data('id'));
+                $('#transfer-event-modal').modal('show');
+                to_transfer = $(this);
             });
         });
 
@@ -249,6 +327,14 @@
                 to_swap.hide();
                 $('#swap-event-modal').modal('hide');
                 $('#swap-confirm').modal('show');
+            });
+        });
+
+        $('#event-transfer').click(function () {
+            $.post('{% url 'dashboard:pick_transfer' %}', {'id': $('#transfer_hidden_id').val()}, function () {
+                to_transfer.hide();
+                $('#transfer-event-modal').modal('hide');
+                $('#transfer-confirm').modal('show');
             });
         });
         function addEvent(id, title, start, end) {

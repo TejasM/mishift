@@ -98,6 +98,7 @@ def swap_page(request):
             if s.agreed_swap.agreed_swap == s and s not in agreed_swaps:
                 agreed_swaps.add(s.id)
         context['agreed_swaps'] = Event.objects.filter(pk__in=list(agreed_swaps))
+        context['agreed_transfers'] = events.filter(requested_transfer=True).filter(~Q(to_change_user=None))
         return render(request, 'dashboard/swap_admin.html', context)
     else:
         my_shifts = events.filter(belongs_to=request.user)
@@ -114,7 +115,9 @@ def see_posted_shifts(request):
     context = {}
     swap_shifts = Event.objects.filter(~Q(belongs_to=request.user)).filter(
         belongs_to__userprofile__organization=request.user.userprofile.organization, requested_swap=True)
-    context['events'] = swap_shifts
+    transfer_shifts = Event.objects.filter(~Q(belongs_to=request.user)).filter(
+        belongs_to__userprofile__organization=request.user.userprofile.organization, requested_transfer=True)
+    context['events'] = (swap_shifts | transfer_shifts).distinct()
     my_shifts = Event.objects.filter(belongs_to__userprofile__organization=request.user.userprofile.organization,
                                      belongs_to=request.user)
     context['my_shifts'] = my_shifts
@@ -208,5 +211,51 @@ def approve_swap(request):
         e.to_swap_events = set()
         to_e.to_swap_events = set()
         to_e.save()
+        e.save()
+    return HttpResponse()
+
+
+@csrf_exempt
+def to_transfer(request):
+    if request.method == "POST":
+        event_id = request.POST['id']
+        e = Event.objects.get(pk=event_id)
+        e.requested_transfer = not e.requested_transfer
+        e.to_change_user = None
+        e.save()
+    return HttpResponse()
+
+
+@csrf_exempt
+def pick_transfer(request):
+    if request.method == "POST":
+        event_id = request.POST['id']
+        e = Event.objects.get(pk=event_id)
+        e.to_change_user = request.user
+        e.save()
+    return HttpResponse()
+
+
+@csrf_exempt
+def cancel_transfer(request):
+    if request.method == "POST":
+        event_id = request.POST['id']
+        e = Event.objects.get(pk=event_id)
+        e.to_change_user = None
+        if e.belongs_to == request.user:
+            e.requested_transfer = False
+        e.save()
+    return HttpResponse()
+
+
+@csrf_exempt
+def approve_transfer(request):
+    if request.method == "POST":
+        event_id = request.POST['id']
+        e = Event.objects.get(pk=event_id)
+        new_belongs_to = e.to_change_user
+        e.belongs_to = new_belongs_to
+        e.requested_transfer = False
+        e.to_change_user = None
         e.save()
     return HttpResponse()
