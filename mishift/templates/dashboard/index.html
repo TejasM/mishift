@@ -191,31 +191,31 @@
                 eventRender: function (event, element) {
                     if (event.end) {
                         $(element).find('.fc-time').text(event.start.format('h:mm a') + '-' + event.end.format('h:mm a'));
-                    }
-                    if (!event.to_swap) {
-                        if (event.user_id == {{ user.id }}) {
-                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
-                        }
-                    } else {
-                        if (event.user_id == {{ user.id }}) {
-                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
+                        if (!event.to_swap) {
+                            if (event.user_id == {{ user.id }}) {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
+                            }
                         } else {
-                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-swap-calls swapped"></i></span>');
+                            if (event.user_id == {{ user.id }}) {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
+                            } else {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-swap-calls swapped"></i></span>');
+                            }
                         }
-                    }
 
-                    if (!event.to_transfer) {
-                        if (event.user_id == {{ user.id }}) {
-                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made"></i></span>');
-                        }
-                    } else {
-                        if (event.user_id == {{ user.id }}) {
-                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made swapped"></i></span>');
+                        if (!event.to_transfer) {
+                            if (event.user_id == {{ user.id }}) {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made"></i></span>');
+                            }
                         } else {
-                            $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-received"></i></span>');
+                            if (event.user_id == {{ user.id }}) {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made swapped"></i></span>');
+                            } else {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-received"></i></span>');
+                            }
                         }
+                        $(element).find('.fc-title').after('<br>');
                     }
-                    $(element).find('.fc-title').after('<br>');
                 },
                 {% if user.userprofile.is_admin %}
                     eventClick: function (calEvent, jsEvent, view) {
@@ -244,7 +244,9 @@
                 ]
             });
             {% if user.userprofile.is_admin %}
-                $('.fc-day').append('<p class="add-event">+</p>');
+                setTimeout(function () {
+                    $('.fc-day').append('<p class="add-event">+</p>');
+                }, 1000);
                 $('body').on('click', '.add-event', function () {
                     $('#add-event-modal').modal('show');
                     $('#inputShift').val('');
