@@ -1,15 +1,19 @@
+from datetime import date, datetime, timedelta
 import json
+from time import strptime
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.db import DataError, IntegrityError
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
-from models import UserProfile, Event
+import xlrd
+from models import UserProfile, Event, legend
 
 __author__ = 'tmehta'
 
@@ -259,3 +263,47 @@ def approve_transfer(request):
         e.to_change_user = None
         e.save()
     return HttpResponse()
+
+
+@login_required()
+@csrf_exempt
+def import_events(request):
+    f = ContentFile(request.FILES['file'])
+    events = xlrd.open_workbook(f)
+    sheet = events.sheet_by_index(0)
+    employees = []
+    for i, item in enumerate(sheet.col(1)):
+        if i < 6:
+            continue
+        elif item.value.strip != '':
+            # name = item.value.split(',')
+            # try:
+            # u = User.objects.get(first_name=name[1], last_name=name[0])
+            # except User.DoesNotExist:
+            #     pass
+            try:
+                u = User.objects.get(username='employee' + str(i - 5) + '@employee.com')
+            except User.DoesNotExist:
+                u = User.objects.create(first_name='Employee', last_name=str(i - 5),
+                                        email='employee' + str(i - 5) + '@employee.com',
+                                        username='employee' + str(i - 5) + '@employee.com')
+                UserProfile.objects.create(user=u, organization='UHN', qualification='RN')
+                u.set_password('employee' + str(i - 5))
+                u.save()
+            employees.append(u)
+    year = sheet.cell_value(1, 1)
+    start_date = sheet.cell_value(2, 4)
+    start_month = sheet.cell_value(2, 5)
+    cur_date = date(year, strptime(start_month, '%b').tm_mon, start_date)
+    cur_num = 2
+    all_blank = False
+    while not all_blank:
+        all_blank = True
+        for i, e in enumerate(employees):
+            cell_val = sheet.cell_value(i + 5, cur_num)
+            if cell_val.strip() != '':
+                t = legend[cell_val]
+                event_times = datetime.combine(start_date, t)
+                Event.objects.create(belongs_to=e, event_text=cell_val, event_times[0], event_times[1])
+                all_blank = False
+        cur_date += timedelta(days=1)
