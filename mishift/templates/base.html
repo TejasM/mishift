@@ -57,7 +57,7 @@
                     {% endif %}
                 {% endif %}
                 {% if not user.is_authenticated %}
-                    <li><a href="#" style="line-height: 2.5em">About</a></li>
+                    <li><a href="{% url 'about' %}" style="line-height: 2.5em">About</a></li>
                 {% else %}
                     {% if user.userprofile.is_admin %}
                         <li><a href="{% url 'dashboard:swap_page' %}" style="line-height: 2.5em"><i

@@ -10,6 +10,7 @@ urlpatterns = patterns('',
                        url(r'^swap/$', views.swap_page, name='swap_page'),
 
                        url(r'^create_event/$', views.create_event, name='event'),
+                       url(r'^import_events/$', views.import_events, name='import_events'),
 
                        url(r'^to_swap/$', views.to_swap, name='to_swap'),
                        url(r'^pick_swap/$', views.pick_swap, name='pick_swap'),

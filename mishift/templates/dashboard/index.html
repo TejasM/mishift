@@ -3,6 +3,17 @@
     <link href="{{ STATIC_URL }}css/jquery.datetimepicker.css" rel="stylesheet">
 {% endblock %}
 {% block outside_container %}
+    {% if user.userprofile.is_admin %}
+        <div class="row">
+            <div class="col-lg-12">
+                <form action="{% url 'dashboard:import_events' %}" method="post" enctype="multipart/form-data"
+                      style="display: none">
+                    <input type="file" name="file" id="file">
+                </form>
+                <button id="export-from" class="btn btn-primary" style="float:right;">Export From File</button>
+            </div>
+        </div>
+    {% endif %}
     <div class="col-lg-12">
         <div id="calendar"></div>
     </div>
@@ -244,6 +255,12 @@
                         },
                     {% endfor %}
                 ]
+            });
+            $('#export-from').click(function () {
+                $('#file').trigger('click');
+            });
+            $('#file').change(function () {
+                $(this).closest('form').submit();
             });
             {% if user.userprofile.is_admin %}
                 setTimeout(function () {

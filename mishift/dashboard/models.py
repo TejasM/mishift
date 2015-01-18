@@ -24,6 +24,17 @@ class Event(models.Model):
     def transfer_check(self):
         return self.requested_transfer and not self.to_change_user
 
+    def json(self):
+        return {
+            'id': self.id,
+            'title': self.event_text + "for" + self.belongs_to.get_full_name(),
+            'start': self.start_date.strftime('Y-m-d H:i'),
+            'end': self.end_date.strftime('Y-m-d H:i'),
+            'user_id': self.belongs_to.id,
+            'to_swap': self.requested_swap,
+            'to_transfer': self.requested_transfer,
+        }
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, unique=True)

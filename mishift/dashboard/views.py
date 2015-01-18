@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 import json
+from tempfile import TemporaryFile
 from time import strptime
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
@@ -121,6 +122,21 @@ def swap_page(request):
         context['other_swaps'] = events.filter(~Q(belongs_to=request.user)).filter(requested_swap=True)
         context['other_transfers'] = events.filter(~Q(belongs_to=request.user)).filter(requested_transfer=True)
         return render(request, 'dashboard/swap.html', context)
+
+
+@login_required()
+def get_shifts(request):
+    type_shift = request.GET['type']
+    month = request.GET['month']
+    if type_shift == 'admin':
+        shifts = Event.objects.filter(belongs_to__userprofile__organization=request.user.userprofile.organization,
+                                      start_date__month=month)
+    else:
+        shifts = Event.objects.filter(belongs_to=request.user,
+                                      belongs_to__userprofile__organization=request.user.userprofile.organization,
+                                      start_date__month=month)
+    shifts = [x.json for x in shifts]
+    return HttpResponse(json.dumps({'events': shifts}), content_type='application/json')
 
 
 @login_required()
@@ -277,13 +293,14 @@ def approve_transfer(request):
 @login_required()
 @csrf_exempt
 def import_events(request):
-    f = ContentFile(request.FILES['file'])
-    add_events_from(f)
-    return HttpResponse()
+    if request.method == "POST":
+        f = request.FILES['file']
+        add_events_from(f.read())
+    return redirect(reverse('dashboard:main'))
 
 
 def add_events_from(f):
-    events = xlrd.open_workbook(f)
+    events = xlrd.open_workbook(file_contents=f)
     sheet = events.sheet_by_index(0)
     employees = []
     for i, item in enumerate(sheet.col(1)):

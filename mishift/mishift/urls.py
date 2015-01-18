@@ -11,6 +11,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
                        url(r'^$', TemplateView.as_view(template_name='base2.html')),
+                       url(r'^about/$', TemplateView.as_view(template_name='about.html'), name='about'),
 
 
                        url(r'^logout/$', logout_user, name='logout'),
