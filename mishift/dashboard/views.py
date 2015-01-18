@@ -13,7 +13,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 import xlrd
-from models import UserProfile, Event, legend
+from models import UserProfile, Event, legend_hr
 
 __author__ = 'tmehta'
 
@@ -88,6 +88,15 @@ def main(request):
         my_shifts = Event.objects.filter(
             belongs_to__userprofile__organization=request.user.userprofile.organization).filter(belongs_to=request.user)
         context['events'] = my_shifts
+    return render(request, 'dashboard/index.html', context)
+
+
+@login_required()
+def organization_shifts(request):
+    context = {}
+    my_shifts = Event.objects.filter(
+        belongs_to__userprofile__organization=request.user.userprofile.organization).filter(belongs_to=request.user)
+    context['events'] = my_shifts
     return render(request, 'dashboard/index.html', context)
 
 
@@ -269,18 +278,24 @@ def approve_transfer(request):
 @csrf_exempt
 def import_events(request):
     f = ContentFile(request.FILES['file'])
+    add_events_from(f)
+    return HttpResponse()
+
+
+def add_events_from(f):
     events = xlrd.open_workbook(f)
     sheet = events.sheet_by_index(0)
     employees = []
     for i, item in enumerate(sheet.col(1)):
         if i < 6:
             continue
-        elif item.value.strip != '':
+        elif item.value.strip() != '':
+            print item.value
             # name = item.value.split(',')
             # try:
             # u = User.objects.get(first_name=name[1], last_name=name[0])
             # except User.DoesNotExist:
-            #     pass
+            # pass
             try:
                 u = User.objects.get(username='employee' + str(i - 5) + '@employee.com')
             except User.DoesNotExist:
@@ -292,18 +307,40 @@ def import_events(request):
                 u.save()
             employees.append(u)
     year = sheet.cell_value(1, 1)
-    start_date = sheet.cell_value(2, 4)
+    start_date = sheet.cell_value(4, 2)
     start_month = sheet.cell_value(2, 5)
-    cur_date = date(year, strptime(start_month, '%b').tm_mon, start_date)
+    cur_date = date(int(year), strptime(start_month, '%b').tm_mon, int(start_date))
     cur_num = 2
     all_blank = False
+    k = 0
     while not all_blank:
-        all_blank = True
-        for i, e in enumerate(employees):
-            cell_val = sheet.cell_value(i + 5, cur_num)
-            if cell_val.strip() != '':
-                t = legend[cell_val]
-                event_times = datetime.combine(start_date, t)
-                Event.objects.create(belongs_to=e, event_text=cell_val, event_times[0], event_times[1])
-                all_blank = False
-        cur_date += timedelta(days=1)
+        if k > 100000:
+            break
+        else:
+            print "Current Date", str(cur_date)
+            try:
+                if str(sheet.cell_value(4, cur_num)).strip() != '':
+                    for i, e in enumerate(employees):
+                        cell_val = str(sheet.cell_value(i + 6, cur_num))
+                        print cell_val
+                        if cell_val.strip() != '':
+                            if cell_val in legend_hr:
+                                t = legend_hr[cell_val]
+                                event_times = [datetime.combine(cur_date, t[0])]
+                                if t[1] < t[0]:
+                                    start_date_temp = cur_date + timedelta(days=1)
+                                    event_times.append(datetime.combine(start_date_temp, t[1]))
+                                else:
+                                    event_times.append(datetime.combine(cur_date, t[1]))
+                                event = Event.objects.create(belongs_to=e, event_text=cell_val,
+                                                             start_date=event_times[0],
+                                                             end_date=event_times[1])
+                                print "Event Created", e.get_full_name(), event.start_date, event.end_date
+                            all_blank = False
+                    cur_date += timedelta(days=1)
+                    cur_num += 1
+                else:
+                    break
+            except Exception as e:
+                print e
+                break

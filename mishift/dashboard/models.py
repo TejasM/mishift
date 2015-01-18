@@ -1,3 +1,4 @@
+from datetime import time
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -38,4 +39,8 @@ class UserProfile(models.Model):
         return u'Profile of user: %s' % self.user.username
 
 
-legend = {}
+legend_hr = {'TD': (time(hour=11, minute=0, second=0, microsecond=0), time(hour=23, minute=0, second=0, microsecond=0)),
+             'TN': (time(hour=19, minute=0, second=0, microsecond=0), time(hour=9, minute=0, second=0, microsecond=0)),
+             'TE': (time(hour=12, minute=0, second=0, microsecond=0), time(hour=21, minute=0, second=0, microsecond=0)),
+             'D': (time(hour=7, minute=0, second=0, microsecond=0), time(hour=19, minute=0, second=0, microsecond=0)),
+             'N': (time(hour=19, minute=0, second=0, microsecond=0), time(hour=7, minute=0, second=0, microsecond=0))}
