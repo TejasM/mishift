@@ -62,3 +62,9 @@ body {
     cursor: pointer;
     color: green;
 }
+
+.fc-more-popover {
+    max-height: 400px;
+    z-index: 10000;
+    overflow-y: auto;
+}

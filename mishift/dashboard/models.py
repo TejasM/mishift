@@ -27,9 +27,9 @@ class Event(models.Model):
     def json(self):
         return {
             'id': self.id,
-            'title': self.event_text + "for" + self.belongs_to.get_full_name(),
-            'start': self.start_date.strftime('Y-m-d H:i'),
-            'end': self.end_date.strftime('Y-m-d H:i'),
+            'title': str(self.event_text + " for " + self.belongs_to.get_full_name()),
+            'start': self.start_date.strftime('%Y-%m-%dT%X-05:00'),
+            'end': self.end_date.strftime('%Y-%m-%dT%X-05:00'),
             'user_id': self.belongs_to.id,
             'to_swap': self.requested_swap,
             'to_transfer': self.requested_transfer,

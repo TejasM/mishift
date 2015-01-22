@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 import json
 from tempfile import TemporaryFile
-from time import strptime
+from time import strptime, timezone
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -83,12 +83,13 @@ def main(request):
             organization=request.user.userprofile.organization, role='employee').values_list('user__id',
                                                                                              'user__first_name',
                                                                                              'user__last_name')
-        context['events'] = Event.objects.filter(
-            belongs_to__userprofile__organization=request.user.userprofile.organization)
+        # context['events'] = Event.objects.filter(
+        #     belongs_to__userprofile__organization=request.user.userprofile.organization)
     else:
         my_shifts = Event.objects.filter(
             belongs_to__userprofile__organization=request.user.userprofile.organization).filter(belongs_to=request.user)
         context['events'] = my_shifts
+    context['now'] = datetime.today().month
     return render(request, 'dashboard/index.html', context)
 
 
@@ -98,6 +99,7 @@ def organization_shifts(request):
     my_shifts = Event.objects.filter(
         belongs_to__userprofile__organization=request.user.userprofile.organization).filter(belongs_to=request.user)
     context['events'] = my_shifts
+    context['now'] = datetime.today().month
     return render(request, 'dashboard/index.html', context)
 
 
@@ -127,16 +129,17 @@ def swap_page(request):
 @login_required()
 def get_shifts(request):
     type_shift = request.GET['type']
-    month = request.GET['month']
+    start = request.GET['start']
+    end = request.GET['end']
     if type_shift == 'admin':
         shifts = Event.objects.filter(belongs_to__userprofile__organization=request.user.userprofile.organization,
-                                      start_date__month=month)
+                                      start_date__range=(start, end))
     else:
         shifts = Event.objects.filter(belongs_to=request.user,
                                       belongs_to__userprofile__organization=request.user.userprofile.organization,
-                                      start_date__month=month)
-    shifts = [x.json for x in shifts]
-    return HttpResponse(json.dumps({'events': shifts}), content_type='application/json')
+                                      start_date__range=(start, end))
+    shifts = [x.json() for x in shifts]
+    return HttpResponse(json.dumps(shifts), content_type='application/json')
 
 
 @login_required()
@@ -150,6 +153,7 @@ def see_posted_shifts(request):
     my_shifts = Event.objects.filter(belongs_to__userprofile__organization=request.user.userprofile.organization,
                                      belongs_to=request.user)
     context['my_shifts'] = my_shifts
+    context['now'] = datetime.today().month
     return render(request, 'dashboard/index.html', context)
 
 

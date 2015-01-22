@@ -242,19 +242,19 @@
                         calendar_event = calEvent;
                     },
                 {% endif %}
-                events: [
-                    {% for e in events %}
-                        {
-                            id: {{ e.id }},
-                            title: "{{ e.event_text }} for {{ e.belongs_to.get_full_name }}",
-                            start: "{{ e.start_date|date:'Y-m-d H:i' }}",
-                            end: "{{ e.end_date|date:'Y-m-d H:i' }}",
-                            user_id: {{ e.belongs_to.id }},
-                            to_swap: {{ e.requested_swap|yesno:"true,false" }},
-                            to_transfer: {{ e.transfer_check|yesno:"true,false" }},
-                        },
-                    {% endfor %}
-                ]
+                events: { url: '{% url 'dashboard:get_shifts' %}',
+                    type: 'GET',
+                    data: {
+                        {% if user.userprofile.is_admin %}
+                            type: 'admin',
+                        {% else %}
+                            type: 'user',
+                        {% endif %}
+                    },
+                    error: function () {
+                        alert('there was an error while fetching events!');
+                    }
+                },
             });
             $('#export-from').click(function () {
                 $('#file').trigger('click');
