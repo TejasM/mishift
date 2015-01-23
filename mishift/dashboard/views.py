@@ -83,23 +83,13 @@ def main(request):
             organization=request.user.userprofile.organization, role='employee').values_list('user__id',
                                                                                              'user__first_name',
                                                                                              'user__last_name')
-        # context['events'] = Event.objects.filter(
-        #     belongs_to__userprofile__organization=request.user.userprofile.organization)
-    else:
-        my_shifts = Event.objects.filter(
-            belongs_to__userprofile__organization=request.user.userprofile.organization).filter(belongs_to=request.user)
-        context['events'] = my_shifts
     context['now'] = datetime.today().month
     return render(request, 'dashboard/index.html', context)
 
 
 @login_required()
 def organization_shifts(request):
-    context = {}
-    my_shifts = Event.objects.filter(
-        belongs_to__userprofile__organization=request.user.userprofile.organization).filter(belongs_to=request.user)
-    context['events'] = my_shifts
-    context['now'] = datetime.today().month
+    context = {'organization': True}
     return render(request, 'dashboard/index.html', context)
 
 

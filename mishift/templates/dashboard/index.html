@@ -4,13 +4,29 @@
 {% endblock %}
 {% block outside_container %}
     {% if user.userprofile.is_admin %}
-        <div class="row">
-            <div class="col-lg-12">
-                <form action="{% url 'dashboard:import_events' %}" method="post" enctype="multipart/form-data"
-                      style="display: none">
-                    <input type="file" name="file" id="file">
-                </form>
-                <button id="export-from" class="btn btn-primary" style="float:right;">Export From File</button>
+        <div class="col-lg-12">
+            <form action="{% url 'dashboard:import_events' %}" method="post" enctype="multipart/form-data"
+                  style="display: none">
+                <input type="file" name="file" id="file">
+            </form>
+            <button id="export-from" class="btn btn-primary" style="float:right;">Export From File</button>
+        </div>
+    {% else %}
+        <div class="col-lg-12">
+            <div style="float: left">
+                <h2>Legend</h2>
+                {% if events != None %}
+                    <p><i class="mdi-communication-swap-calls"></i>&nbsp;&nbsp; Pick Up Swap &nbsp;&nbsp; <i
+                            class="mdi-communication-call-received"></i>&nbsp;&nbsp; Take Shift</p>
+                {% else %}
+                    <p><i class="mdi-notification-sync"></i>&nbsp;&nbsp; To Swap Pool &nbsp;&nbsp; <i
+                            class="mdi-communication-call-made"></i>&nbsp;&nbsp; To Transfer Pool</p>
+
+                    <p><i class="mdi-notification-sync" style="color: green"></i>&nbsp;&nbsp; Already in Swap Pool
+                        &nbsp;&nbsp; <i
+                                class="mdi-communication-call-made" style="color: green"></i>&nbsp;&nbsp; Already in
+                        Transfer Pool</p>
+                {% endif %}
             </div>
         </div>
     {% endif %}
@@ -182,70 +198,71 @@
 {% block extra_js %}
     <script src="{{ STATIC_URL }}js/jquery.datetimepicker.js"></script>
     <script>
-        var selected_date;
-        var calendar;
-        var to_swap, to_transfer;
-        var clicked_swap, clicked_transfer;
-        var calendar_event;
-        $(document).ready(function () {
-            $('#event-form').validate();
-            // page is now ready, initialize the calendar...
-            calendar = $('#calendar');
-            calendar.fullCalendar({
-                header: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'month,basicWeek,basicDay'
-                },
-                defaultView: 'month',
-                eventLimit: true,
-                eventRender: function (event, element) {
-                    if (event.end) {
-                        $(element).find('.fc-time').text(event.start.format('h:mm a') + '-' + event.end.format('h:mm a'));
-                        {% if not user.userprofile.is_admin %}
-                            if (!event.to_swap) {
-                                if (event.user_id == {{ user.id }}) {
-                                    $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
-                                }
-                            } else {
-                                if (event.user_id == {{ user.id }}) {
-                                    $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
-                                } else {
-                                    $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-swap-calls swapped"></i></span>');
-                                }
+    var selected_date;
+    var calendar;
+    var to_swap, to_transfer;
+    var clicked_swap, clicked_transfer;
+    var calendar_event;
+    $(document).ready(function () {
+        $('#event-form').validate();
+        // page is now ready, initialize the calendar...
+        calendar = $('#calendar');
+        calendar.fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,basicWeek,basicDay'
+            },
+            defaultView: 'month',
+            eventLimit: true,
+            eventRender: function (event, element) {
+                if (event.end) {
+                    $(element).find('.fc-time').text(event.start.format('h:mm a') + '-' + event.end.format('h:mm a'));
+                    {% if not user.userprofile.is_admin %}
+                        if (!event.to_swap) {
+                            if (event.user_id == {{ user.id }}) {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
                             }
+                        } else {
+                            if (event.user_id == {{ user.id }}) {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
+                            } else {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-swap-calls swapped"></i></span>');
+                            }
+                        }
 
-                            if (!event.to_transfer) {
-                                if (event.user_id == {{ user.id }}) {
-                                    $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made"></i></span>');
-                                }
-                            } else {
-                                if (event.user_id == {{ user.id }}) {
-                                    $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made swapped"></i></span>');
-                                } else {
-                                    $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-received"></i></span>');
-                                }
+                        if (!event.to_transfer) {
+                            if (event.user_id == {{ user.id }}) {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made"></i></span>');
                             }
-                            $(element).find('.fc-title').after('<br>');
-                        {% endif %}
-                    }
+                        } else {
+                            if (event.user_id == {{ user.id }}) {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made swapped"></i></span>');
+                            } else {
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-received"></i></span>');
+                            }
+                        }
+                        $(element).find('.fc-title').after('<br>');
+                    {% endif %}
+                }
+            },
+            {% if user.userprofile.is_admin %}
+                eventClick: function (calEvent, jsEvent, view) {
+                    $('#add-event-modal').modal('show');
+                    $('#employee').val(calEvent.user_id);
+                    $('#inputShift').val(calEvent.title.split(' - ')[0]);
+                    $('#inputStartTime').val(calEvent.start.format('YYYY-MM-DD HH:mm'));
+                    $('#inputEndTime').val(calEvent.end.format('YYYY-MM-DD HH:mm'));
+                    $('#hidden_id').val(calEvent.id);
+                    $('#event-add').text('Update Event');
+                    calendar_event = calEvent;
                 },
-                {% if user.userprofile.is_admin %}
-                    eventClick: function (calEvent, jsEvent, view) {
-                        $('#add-event-modal').modal('show');
-                        $('#employee').val(calEvent.user_id);
-                        $('#inputShift').val(calEvent.title.split(' - ')[0]);
-                        $('#inputStartTime').val(calEvent.start.format('YYYY-MM-DD HH:mm'));
-                        $('#inputEndTime').val(calEvent.end.format('YYYY-MM-DD HH:mm'));
-                        $('#hidden_id').val(calEvent.id);
-                        $('#event-add').text('Update Event');
-                        calendar_event = calEvent;
-                    },
-                {% endif %}
+            {% endif %}
+            {% if events == None %}
                 events: { url: '{% url 'dashboard:get_shifts' %}',
                     type: 'GET',
                     data: {
-                        {% if user.userprofile.is_admin %}
+                        {% if user.userprofile.is_admin or organization %}
                             type: 'admin',
                         {% else %}
                             type: 'user',
@@ -255,122 +272,137 @@
                         alert('there was an error while fetching events!');
                     }
                 },
-            });
-            $('#export-from').click(function () {
-                $('#file').trigger('click');
-            });
-            $('#file').change(function () {
-                $(this).closest('form').submit();
-            });
-            {% if user.userprofile.is_admin %}
-                setTimeout(function () {
-                    $('.fc-day').append('<p class="add-event">+</p>');
-                }, 1000);
-                $('body').on('click', '.add-event', function () {
-                    $('#add-event-modal').modal('show');
-                    $('#inputShift').val('');
-                    $('#hidden_id').val('');
-                    $('#inputStartTime').val($(this).closest('.fc-day').data('date'));
-                    $('#inputEndTime').val($(this).closest('.fc-day').data('date'));
-                    $('#event-add').text('Add Event');
-                });
-                $('#event-add').click(function () {
-                    var $form = $('#event-form');
-                    if ($form.validate().element('#employee') &&
-                            $form.validate().element('#inputShift') &&
-                            $form.validate().element('#inputStartTime') &&
-                            $form.validate().element('#inputEndTime')) {
-                        $.post('{% url 'dashboard:event' %}', {
-                            user: $('#employee').val(),
-                            id: $('#hidden_id').val(),
-                            text: $('#inputShift').val(),
-                            start_date: $('#inputStartTime').val().replace(/\//g, '-'),
-                            end_date: $('#inputEndTime').val().replace(/\//g, '-'),
-                        }, function (data) {
-                            if ($('#hidden_id').val() == '') {
-                                addEvent(data['id'], data['title'], data['start'], data['end']);
-                                $('#add-event-modal').modal('hide');
-                            } else {
-                                calendar_event.title = $('#inputShift').val();
-                                calendar_event.start_date = data['start'];
-                                calendar_event.end_date = data['end'];
-                                $('#calendar').fullCalendar('updateEvent', calendar_event);
-                            }
-                        });
-                    }
-                });
-                $('#inputStartTime').datetimepicker({
-                });
-                $('#inputEndTime').datetimepicker({
-                });
-            {% endif %}
-            {% if not user.userprofile.is_admin %}
-                $('body').on('click', '.mdi-notification-sync', function (event) {
-                    event.stopPropagation();
-                    clicked_swap = $(this);
-                    if ($(this).data('user-id') == {{ user.id }}) {
-                        $.post('{% url 'dashboard:to_swap' %}', {'id': $(this).data('id')}, function () {
-                            clicked_swap.toggleClass('swapped');
-                        });
-                    } else {
-
-                    }
-                });
-
-                $('body').on('click', '.mdi-communication-call-made', function (event) {
-                    event.stopPropagation();
-                    clicked_transfer = $(this);
-                    if ($(this).data('user-id') == {{ user.id }}) {
-                        $.post('{% url 'dashboard:to_transfer' %}', {'id': $(this).data('id')}, function () {
-                            clicked_transfer.toggleClass('swapped');
-                        });
-                    } else {
-
-                    }
-                });
-
-                $('body').on('click', '.mdi-communication-swap-calls', function () {
-                    $('#shift_switch_with').text($(this).data('text'));
-                    $('#hidden_id').val($(this).data('id'));
-                    $('#swap-event-modal').modal('show');
-                    to_swap = $(this);
-                });
-
-                $('body').on('click', '.mdi-communication-call-received', function () {
-                    $('#shift_transfer_with').text($(this).data('text'));
-                    $('#transfer_hidden_id').val($(this).data('id'));
-                    $('#transfer-event-modal').modal('show');
-                    to_transfer = $(this);
-                });
-            {% endif %}
-        });
-
-        $('#event-swap').click(function () {
-            $.post('{% url 'dashboard:pick_swap' %}', {'id': $('#hidden_id').val(), 'to_id': $('#swap-shift').val()}, function () {
-                to_swap.hide();
-                $('#swap-event-modal').modal('hide');
-                $('#swap-confirm').modal('show');
-            });
-        });
-
-        $('#event-transfer').click(function () {
-            $.post('{% url 'dashboard:pick_transfer' %}', {'id': $('#transfer_hidden_id').val()}, function () {
-                to_transfer.hide();
-                $('#transfer-event-modal').modal('hide');
-                $('#transfer-confirm').modal('show');
-            });
-        });
-        function addEvent(id, title, start, end) {
-            calendar.fullCalendar('addEventSource', {
+            {% else %}
                 events: [
-                    {
-                        id: id,
-                        title: title,
-                        start: start,
-                        end: end,
-                    }
+                    {% for e in events %}
+                        {
+                            id: {{ e.id }},
+                            title: "{{ e.event_text }} for {{ e.belongs_to.get_full_name }}",
+                            start: "{{ e.start_date|date:'Y-m-d H:i' }}",
+                            end: "{{ e.end_date|date:'Y-m-d H:i' }}",
+                            user_id: {{ e.belongs_to.id }},
+                            to_swap: {{ e.requested_swap|yesno:"true,false" }},
+                            to_transfer: {{ e.transfer_check|yesno:"true,false" }},
+                        },
+                    {% endfor %}
                 ]
+            {% endif %}
+        });
+        $('#export-from').click(function () {
+            $('#file').trigger('click');
+        });
+        $('#file').change(function () {
+            $(this).closest('form').submit();
+        });
+        {% if user.userprofile.is_admin %}
+            setTimeout(function () {
+                $('.fc-day').append('<p class="add-event">+</p>');
+            }, 1000);
+            $('body').on('click', '.add-event', function () {
+                $('#add-event-modal').modal('show');
+                $('#inputShift').val('');
+                $('#hidden_id').val('');
+                $('#inputStartTime').val($(this).closest('.fc-day').data('date'));
+                $('#inputEndTime').val($(this).closest('.fc-day').data('date'));
+                $('#event-add').text('Add Event');
             });
-        }
+            $('#event-add').click(function () {
+                var $form = $('#event-form');
+                if ($form.validate().element('#employee') &&
+                        $form.validate().element('#inputShift') &&
+                        $form.validate().element('#inputStartTime') &&
+                        $form.validate().element('#inputEndTime')) {
+                    $.post('{% url 'dashboard:event' %}', {
+                        user: $('#employee').val(),
+                        id: $('#hidden_id').val(),
+                        text: $('#inputShift').val(),
+                        start_date: $('#inputStartTime').val().replace(/\//g, '-'),
+                        end_date: $('#inputEndTime').val().replace(/\//g, '-'),
+                    }, function (data) {
+                        if ($('#hidden_id').val() == '') {
+                            addEvent(data['id'], data['title'], data['start'], data['end']);
+                            $('#add-event-modal').modal('hide');
+                        } else {
+                            calendar_event.title = $('#inputShift').val();
+                            calendar_event.start_date = data['start'];
+                            calendar_event.end_date = data['end'];
+                            $('#calendar').fullCalendar('updateEvent', calendar_event);
+                        }
+                    });
+                }
+            });
+            $('#inputStartTime').datetimepicker({
+            });
+            $('#inputEndTime').datetimepicker({
+            });
+        {% endif %}
+        {% if not user.userprofile.is_admin %}
+            $('body').on('click', '.mdi-notification-sync', function (event) {
+                event.stopPropagation();
+                clicked_swap = $(this);
+                if ($(this).data('user-id') == {{ user.id }}) {
+                    $.post('{% url 'dashboard:to_swap' %}', {'id': $(this).data('id')}, function () {
+                        clicked_swap.toggleClass('swapped');
+                    });
+                } else {
+
+                }
+            });
+
+            $('body').on('click', '.mdi-communication-call-made', function (event) {
+                event.stopPropagation();
+                clicked_transfer = $(this);
+                if ($(this).data('user-id') == {{ user.id }}) {
+                    $.post('{% url 'dashboard:to_transfer' %}', {'id': $(this).data('id')}, function () {
+                        clicked_transfer.toggleClass('swapped');
+                    });
+                } else {
+
+                }
+            });
+
+            $('body').on('click', '.mdi-communication-swap-calls', function () {
+                $('#shift_switch_with').text($(this).data('text'));
+                $('#hidden_id').val($(this).data('id'));
+                $('#swap-event-modal').modal('show');
+                to_swap = $(this);
+            });
+
+            $('body').on('click', '.mdi-communication-call-received', function () {
+                $('#shift_transfer_with').text($(this).data('text'));
+                $('#transfer_hidden_id').val($(this).data('id'));
+                $('#transfer-event-modal').modal('show');
+                to_transfer = $(this);
+            });
+        {% endif %}
+    });
+
+    $('#event-swap').click(function () {
+        $.post('{% url 'dashboard:pick_swap' %}', {'id': $('#hidden_id').val(), 'to_id': $('#swap-shift').val()}, function () {
+            to_swap.hide();
+            $('#swap-event-modal').modal('hide');
+            $('#swap-confirm').modal('show');
+        });
+    });
+
+    $('#event-transfer').click(function () {
+        $.post('{% url 'dashboard:pick_transfer' %}', {'id': $('#transfer_hidden_id').val()}, function () {
+            to_transfer.hide();
+            $('#transfer-event-modal').modal('hide');
+            $('#transfer-confirm').modal('show');
+        });
+    });
+    function addEvent(id, title, start, end) {
+        calendar.fullCalendar('addEventSource', {
+            events: [
+                {
+                    id: id,
+                    title: title,
+                    start: start,
+                    end: end,
+                }
+            ]
+        });
+    }
     </script>
 {% endblock %}
