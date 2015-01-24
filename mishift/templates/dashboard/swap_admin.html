@@ -66,7 +66,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-lg-12 text-center">
+        <div class="col-lg-6 col-lg-offset-3 text-center">
             {% if previous_swaps %}
                 <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample"
                         aria-expanded="false" aria-controls="collapseExample">
@@ -77,7 +77,7 @@
                         {% for s in previous_swaps %}
                             <div class="list-group-item">
                                 <div class="row-action-primary">
-                                    {{ s.event.event_text }}
+                                    <i>{{ s.event.event_text }}</i>
                                 </div>
                                 <div class="row-content">
                                     <div class="action-secondary"><i class="mdi-material-info"></i></div>

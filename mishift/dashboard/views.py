@@ -143,6 +143,7 @@ def see_posted_shifts(request):
     transfer_shifts = Event.objects.filter(~Q(belongs_to=request.user)).filter(
         belongs_to__userprofile__organization=request.user.userprofile.organization, requested_transfer=True)
     context['events'] = (swap_shifts | transfer_shifts).distinct()
+    context['events'] = [e for e in context['events'] if e.transfer_check or e.requested_swap]
     my_shifts = Event.objects.filter(belongs_to__userprofile__organization=request.user.userprofile.organization,
                                      belongs_to=request.user)
     context['my_shifts'] = my_shifts
