@@ -53,7 +53,7 @@
                         <li><a href="{% url 'dashboard:organization_shifts' %}" style="line-height: 2.5em"><i
                                 class="mdi-communication-business"></i>&nbsp;&nbsp; Organization Shifts</a></li>
                         <li><a href="{% url 'dashboard:main' %}" style="line-height: 2.5em"><i
-                                class="mdi-action-view-agenda"></i>&nbsp;&nbsp; Your Shifts</a></li>
+                                class="mdi-action-view-agenda"></i>&nbsp;&nbsp; Mi Shifts</a></li>
                     {% endif %}
                 {% endif %}
                 {% if not user.is_authenticated %}
@@ -65,14 +65,15 @@
                         </li>
                     {% else %}
                         <li><a href="{% url 'dashboard:swap_page' %}" style="line-height: 2.5em"><i
-                                class="mdi-av-my-library-books"></i>&nbsp;&nbsp; Your Proposed Swaps</a>
+                                class="mdi-av-my-library-books"></i>&nbsp;&nbsp; Mi Proposed Swaps</a>
                         </li>
                         <li><a href="{% url 'dashboard:posted_shifts' %}" style="line-height: 2.5em"><i
                                 class="mdi-av-playlist-add"></i>&nbsp;&nbsp; Posted Shifts</a></li>
                     {% endif %}
                 {% endif %}
                 {% if user.is_authenticated %}
-                    <li><a href="{% url 'logout' %}" style="line-height: 2.5em"><i class="mdi-action-exit-to-app"></i>&nbsp;&nbsp; Logout</a></li>
+                    <li><a href="{% url 'logout' %}" style="line-height: 2.5em"><i class="mdi-action-exit-to-app"></i>&nbsp;&nbsp;
+                        Logout</a></li>
                 {% else %}
                     <li>
                         <a href="{% url 'dashboard:signup' %}">

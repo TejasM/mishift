@@ -36,6 +36,12 @@ class Event(models.Model):
         }
 
 
+class PreviousTransfers(models.Model):
+    from_user = models.ForeignKey(User, related_name='from_prev_transfer')
+    to_user = models.ForeignKey(User, related_name='to_prev_transfer')
+    event = models.ForeignKey(Event)
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, unique=True)
     role = models.CharField(max_length=140, default='employee')

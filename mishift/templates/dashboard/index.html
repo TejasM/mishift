@@ -16,16 +16,11 @@
             <div style="float: left">
                 <h2>Legend</h2>
                 {% if events != None %}
-                    <p><i class="mdi-communication-swap-calls"></i>&nbsp;&nbsp; Pick Up Swap &nbsp;&nbsp; <i
-                            class="mdi-communication-call-received"></i>&nbsp;&nbsp; Take Shift</p>
+                    <p><i class="mdi-notification-sync"></i>&nbsp;&nbsp; Pick Up Swap &nbsp;&nbsp; <i
+                            class="mdi-communication-call-made"></i>&nbsp;&nbsp; Pick Up Shift</p>
                 {% else %}
                     <p><i class="mdi-notification-sync"></i>&nbsp;&nbsp; To Swap Pool &nbsp;&nbsp; <i
                             class="mdi-communication-call-made"></i>&nbsp;&nbsp; To Transfer Pool</p>
-
-                    <p><i class="mdi-notification-sync" style="color: green"></i>&nbsp;&nbsp; Already in Swap Pool
-                        &nbsp;&nbsp; <i
-                                class="mdi-communication-call-made" style="color: green"></i>&nbsp;&nbsp; Already in
-                        Transfer Pool</p>
                 {% endif %}
             </div>
         </div>
@@ -189,7 +184,7 @@
                 <div class="modal-body">
                     <p>Your Shift Pickup Request was successfully sent!</p>
 
-                    <p>Once your administrator approves the shift will be added to your schedule</p>
+                    <p>Once your administrator approves the shift will be added to your schedule.</p>
                 </div>
             </div>
         </div>
@@ -221,25 +216,25 @@
                     {% if not user.userprofile.is_admin %}
                         if (!event.to_swap) {
                             if (event.user_id == {{ user.id }}) {
-                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync"></i></span>');
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync give"></i></span>');
                             }
                         } else {
                             if (event.user_id == {{ user.id }}) {
-                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync swapped"></i></span>');
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync give swapped"></i></span>');
                             } else {
-                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-swap-calls swapped"></i></span>');
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-notification-sync recieve swapped"></i></span>');
                             }
                         }
 
                         if (!event.to_transfer) {
                             if (event.user_id == {{ user.id }}) {
-                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made"></i></span>');
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made give"></i></span>');
                             }
                         } else {
                             if (event.user_id == {{ user.id }}) {
-                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made swapped"></i></span>');
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made swapped give"></i></span>');
                             } else {
-                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-received"></i></span>');
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-received recieve"></i></span>');
                             }
                         }
                         $(element).find('.fc-title').after('<br>');
@@ -337,7 +332,7 @@
             });
         {% endif %}
         {% if not user.userprofile.is_admin %}
-            $('body').on('click', '.mdi-notification-sync', function (event) {
+            $('body').on('click', '.mdi-notification-sync.give', function (event) {
                 event.stopPropagation();
                 clicked_swap = $(this);
                 if ($(this).data('user-id') == {{ user.id }}) {
@@ -349,7 +344,7 @@
                 }
             });
 
-            $('body').on('click', '.mdi-communication-call-made', function (event) {
+            $('body').on('click', '.mdi-communication-call-made.give', function (event) {
                 event.stopPropagation();
                 clicked_transfer = $(this);
                 if ($(this).data('user-id') == {{ user.id }}) {
@@ -361,14 +356,14 @@
                 }
             });
 
-            $('body').on('click', '.mdi-communication-swap-calls', function () {
+            $('body').on('click', '.mdi-notification-sync.recieve', function () {
                 $('#shift_switch_with').text($(this).data('text'));
                 $('#hidden_id').val($(this).data('id'));
                 $('#swap-event-modal').modal('show');
                 to_swap = $(this);
             });
 
-            $('body').on('click', '.mdi-communication-call-received', function () {
+            $('body').on('click', '.mdi-communication-call-made.recieve', function () {
                 $('#shift_transfer_with').text($(this).data('text'));
                 $('#transfer_hidden_id').val($(this).data('id'));
                 $('#transfer-event-modal').modal('show');

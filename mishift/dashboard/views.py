@@ -1,12 +1,11 @@
 from datetime import date, datetime, timedelta
 import json
-from tempfile import TemporaryFile
-from time import strptime, timezone
+from time import strptime
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.db import DataError, IntegrityError
 from django.db.models import Q
@@ -14,7 +13,9 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 import xlrd
-from models import UserProfile, Event, legend_hr
+
+from models import UserProfile, Event, legend_hr, PreviousTransfers
+
 
 __author__ = 'tmehta'
 
@@ -105,6 +106,8 @@ def swap_page(request):
                 agreed_swaps.add(s.id)
         context['agreed_swaps'] = Event.objects.filter(pk__in=list(agreed_swaps))
         context['agreed_transfers'] = events.filter(requested_transfer=True).filter(~Q(to_change_user=None))
+        context['previous_swaps'] = PreviousTransfers.objects.filter(
+            event__belongs_to__userprofile__organization=request.user.userprofile.organization)
         return render(request, 'dashboard/swap_admin.html', context)
     else:
         my_shifts = events.filter(belongs_to=request.user)
@@ -235,6 +238,8 @@ def approve_swap(request):
         to_e.to_swap_events = set()
         to_e.save()
         e.save()
+        PreviousTransfers.objects.create(from_user=e.belongs_to, to_user=to_e.belongs_to, event=e)
+        PreviousTransfers.objects.create(from_user=to_e.belongs_to, to_user=to_e.belongs_to, event=e)
     return HttpResponse()
 
 
@@ -277,10 +282,12 @@ def approve_transfer(request):
         event_id = request.POST['id']
         e = Event.objects.get(pk=event_id)
         new_belongs_to = e.to_change_user
+        prev_belong = e.belongs_to
         e.belongs_to = new_belongs_to
         e.requested_transfer = False
         e.to_change_user = None
         e.save()
+        PreviousTransfers.objects.create(from_user=prev_belong, to_user=e.belongs_to, event=e)
     return HttpResponse()
 
 

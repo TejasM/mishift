@@ -4,62 +4,93 @@
 {% endblock %}
 {% block page_title %}Swap Pool{% endblock %}
 {% block content %}
-    <div class="col-lg-6">
-        <h2>Agreed Swaps</h2>
+    <div class="row">
+        <div class="col-lg-6">
+            <h2>Agreed Swaps</h2>
 
-        <div class="list-group">
-            {% for s in agreed_swaps %}
-                <div class="list-group-item">
-                    <div class="row-action-primary">
-                        <i>SWAP</i>
+            <div class="list-group">
+                {% for s in agreed_swaps %}
+                    <div class="list-group-item">
+                        <div class="row-action-primary">
+                            <i>SWAP</i>
+                        </div>
+                        <div class="row-content">
+                            <div class="action-secondary"><i class="mdi-material-info"></i></div>
+                            <h4 class="list-group-item-heading">{{ s.event_text }}
+                                - {{ s.belongs_to.get_full_name }}</h4>
+
+                            <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
+                                - {{ s.end_date|date:'Y-m-d H:i' }}</p>
+                            <h4>with</h4>
+                            <h4 class="list-group-item-heading">{{ s.agreed_swap.event_text }}
+                                - {{ s.agreed_swap.belongs_to.get_full_name }}</h4>
+
+                            <p class="list-group-item-text">{{ s.agreed_swap.start_date|date:'Y-m-d H:i' }}
+                                - {{ s.agreed_swap.end_date|date:'Y-m-d H:i' }}</p>
+                            <button class="btn btn-success approve-swap" data-id="{{ s.id }}">Approve Swap
+                            </button>
+                        </div>
                     </div>
-                    <div class="row-content">
-                        <div class="action-secondary"><i class="mdi-material-info"></i></div>
-                        <h4 class="list-group-item-heading">{{ s.event_text }} - {{ s.belongs_to.get_full_name }}</h4>
+                    {% if not forloop.last %}
+                        <div class="list-group-separator"></div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <h2>Agreed Transfers</h2>
 
-                        <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
-                            - {{ s.end_date|date:'Y-m-d H:i' }}</p>
-                        <h4>with</h4>
-                        <h4 class="list-group-item-heading">{{ s.agreed_swap.event_text }}
-                            - {{ s.agreed_swap.belongs_to.get_full_name }}</h4>
+            <div class="list-group">
+                {% for s in agreed_transfers %}
+                    <div class="list-group-item">
+                        <div class="row-action-primary">
+                            <i>T</i>
+                        </div>
+                        <div class="row-content">
+                            <div class="action-secondary"><i class="mdi-material-info"></i></div>
+                            <h3>Transfer of:</h3>
+                            <h4 class="list-group-item-heading">{{ s.event_text }}</h4>
 
-                        <p class="list-group-item-text">{{ s.agreed_swap.start_date|date:'Y-m-d H:i' }}
-                            - {{ s.agreed_swap.end_date|date:'Y-m-d H:i' }}</p>
-                        <button class="btn btn-success approve-swap" data-id="{{ s.id }}">Approve Swap
-                        </button>
+                            <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
+                                - {{ s.end_date|date:'Y-m-d H:i' }}</p>
+                            <h4>from {{ s.belongs_to.get_full_name }} to {{ s.to_change_user.get_full_name }}</h4>
+                            <button class="btn btn-success approve-transfer" data-id="{{ s.id }}">Approve Transfer
+                            </button>
+                        </div>
                     </div>
-                </div>
-                {% if not forloop.last %}
-                    <div class="list-group-separator"></div>
-                {% endif %}
-            {% endfor %}
+                    {% if not forloop.last %}
+                        <div class="list-group-separator"></div>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
     </div>
-    <div class="col-lg-6">
-        <h2>Agreed Transfers</h2>
+    <div class="row">
+        <div class="col-lg-12 text-center">
+            {% if previous_swaps %}
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample"
+                        aria-expanded="false" aria-controls="collapseExample">
+                    Previous Swaps
+                </button>
+                <div class="collapse" id="collapseExample">
+                    <div class="list-group">
+                        {% for s in previous_swaps %}
+                            <div class="list-group-item">
+                                <div class="row-action-primary">
+                                    {{ s.event.event_text }}
+                                </div>
+                                <div class="row-content">
+                                    <div class="action-secondary"><i class="mdi-material-info"></i></div>
+                                    <h4 class="list-group-item-heading">From: {{ s.from_user.get_full_name }}</h4>
 
-        <div class="list-group">
-            {% for s in agreed_transfers %}
-                <div class="list-group-item">
-                    <div class="row-action-primary">
-                        <i>T</i>
-                    </div>
-                    <div class="row-content">
-                        <div class="action-secondary"><i class="mdi-material-info"></i></div>
-                        <h3>Transfer of:</h3>
-                        <h4 class="list-group-item-heading">{{ s.event_text }}</h4>
-
-                        <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
-                            - {{ s.end_date|date:'Y-m-d H:i' }}</p>
-                        <h4>from {{ s.belongs_to.get_full_name }} to {{ s.to_change_user.get_full_name }}</h4>
-                        <button class="btn btn-success approve-transfer" data-id="{{ s.id }}">Approve Transfer
-                        </button>
+                                    <p class="list-group-item-heading">To: {{ s.to_user.get_full_name }}</p>
+                                </div>
+                            </div>
+                            <div class="list-group-separator"></div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% if not forloop.last %}
-                    <div class="list-group-separator"></div>
-                {% endif %}
-            {% endfor %}
+            {% endif %}
         </div>
     </div>
 {% endblock %}

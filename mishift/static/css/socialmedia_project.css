@@ -68,3 +68,7 @@ body {
     z-index: 10000;
     overflow-y: auto;
 }
+
+.fc-day-grid-event>.fc-content {
+    white-space: normal;
+}
