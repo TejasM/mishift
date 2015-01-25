@@ -26,7 +26,7 @@
                 </li>
             {% endfor %}
             {% for s in my_transfers %}
-                <li class="{% if forloop.first %}active{% endif %}">
+                <li class="{% if forloop.first and not my_swaps %}active{% endif %}">
                     <a href="#swap-{{ s.id }}" data-toggle="tab">
                         <div class="list-group-item">
                             <div class="row-action-primary">
