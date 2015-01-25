@@ -102,7 +102,7 @@ def swap_page(request):
         potential_agreed_swaps = list(events.filter(~Q(agreed_swap=None)).filter(requested_swap=True))
         agreed_swaps = set()
         for s in potential_agreed_swaps:
-            if s.agreed_swap.agreed_swap == s and s not in agreed_swaps:
+            if s.agreed_swap.agreed_swap == s and s not in agreed_swaps and s.agreed_swap not in agreed_swaps:
                 agreed_swaps.add(s.id)
         context['agreed_swaps'] = Event.objects.filter(pk__in=list(agreed_swaps))
         context['agreed_transfers'] = events.filter(requested_transfer=True).filter(~Q(to_change_user=None))
