@@ -216,7 +216,7 @@ def agree_swap(request):
         to_event = Event.objects.get(pk=to_event_id)
         e.agreed_swap = to_event
         if e.requested_swap:
-            to_event.agreed_swap = True
+            to_event.agreed_swap = e
             to_event.save()
         e.save()
     return HttpResponse()
