@@ -54,6 +54,10 @@ body {
     color: green;
 }
 
+.fc-day-grid-event>.fc-content {
+    white-space: normal;
+}
+
 .mdi-communication-call-received {
     cursor: pointer;
 }
