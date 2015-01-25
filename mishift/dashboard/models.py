@@ -40,6 +40,7 @@ class PreviousTransfers(models.Model):
     from_user = models.ForeignKey(User, related_name='from_prev_transfer')
     to_user = models.ForeignKey(User, related_name='to_prev_transfer')
     event = models.ForeignKey(Event)
+    approve_time = models.DateTimeField(default=timezone.now)
 
 
 class UserProfile(models.Model):

@@ -10,12 +10,15 @@ urlpatterns = patterns('',
                        url(r'^posted_shifts/$', views.see_posted_shifts, name='posted_shifts'),
                        url(r'^swap/$', views.swap_page, name='swap_page'),
 
+                       url(r'^previous_swap/$', views.previous_swap_page, name='previous_swap_page'),
+
                        url(r'^create_event/$', views.create_event, name='event'),
                        url(r'^import_events/$', views.import_events, name='import_events'),
 
                        url(r'^to_swap/$', views.to_swap, name='to_swap'),
                        url(r'^pick_swap/$', views.pick_swap, name='pick_swap'),
                        url(r'^cancel_swap/$', views.cancel_swap, name='cancel_swap'),
+                       url(r'^reject_swap/$', views.reject_swap, name='reject_swap'),
                        url(r'^agree_swap/$', views.agree_swap, name='agree_swap'),
                        url(r'^approve_swap/$', views.approve_swap, name='approve_swap'),
 

@@ -106,8 +106,6 @@ def swap_page(request):
                 agreed_swaps.add(s.id)
         context['agreed_swaps'] = Event.objects.filter(pk__in=list(agreed_swaps))
         context['agreed_transfers'] = events.filter(requested_transfer=True).filter(~Q(to_change_user=None))
-        context['previous_swaps'] = PreviousTransfers.objects.filter(
-            event__belongs_to__userprofile__organization=request.user.userprofile.organization)
         return render(request, 'dashboard/swap_admin.html', context)
     else:
         my_shifts = events.filter(belongs_to=request.user)
@@ -117,6 +115,15 @@ def swap_page(request):
         context['other_swaps'] = events.filter(~Q(belongs_to=request.user)).filter(requested_swap=True)
         context['other_transfers'] = events.filter(~Q(belongs_to=request.user)).filter(requested_transfer=True)
         return render(request, 'dashboard/swap.html', context)
+
+
+@login_required()
+def previous_swap_page(request):
+    context = {}
+    if request.user.userprofile.is_admin:
+        context['previous_swaps'] = PreviousTransfers.objects.filter(
+            event__belongs_to__userprofile__organization=request.user.userprofile.organization)
+        return render(request, 'dashboard/previous_swap_admin.html', context)
 
 
 @login_required()
@@ -218,6 +225,19 @@ def cancel_swap(request):
         event_id = request.POST['id']
         e = Event.objects.get(pk=event_id)
         e.agreed_swap = None
+        e.save()
+    return HttpResponse()
+
+
+@csrf_exempt
+def reject_swap(request):
+    if request.method == "POST":
+        event_id = request.POST['id']
+        e = Event.objects.get(pk=event_id)
+        to_event_id = request.POST['to_id']
+        to_event = Event.objects.get(pk=to_event_id)
+        if to_event in e.to_swap_events.all():
+            e.to_swap_events.remove(to_event)
         e.save()
     return HttpResponse()
 

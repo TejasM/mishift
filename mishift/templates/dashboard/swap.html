@@ -45,7 +45,7 @@
             {% endfor %}
         </ul>
     </div>
-    <div class="col-lg-6">
+    <div class="col-lg-6" data-spy="affix" data-offset-top="125">
     <h2>Trades Proposed For Shift</h2>
     <div id="myTabContent" class="tab-content">
         {% for s in my_swaps %}
@@ -73,6 +73,9 @@
                             <button class="btn btn-success agree-swap" data-id="{{ s.id }}"
                                     data-to-id="{{ e.id }}">Agree to swap
                             </button>
+                            <button class="btn btn-success reject-swap" data-id="{{ s.id }}"
+                                    data-to-id="{{ e.id }}">Reject swap
+                            </button>
                         {% endfor %}
                     {% endif %}
                 {% else %}
@@ -81,7 +84,7 @@
             </div>
         {% endfor %}
         {% for s in my_transfers %}
-            <div class="tab-pane fade {% if forloop.first %}active in{% endif %}" id="swap-{{ s.id }}">
+            <div class="tab-pane fade {% if forloop.first and not my_swaps %}active in{% endif %}" id="swap-{{ s.id }}">
                 {% if s.to_change_user %}
                     <p class="list-group-item-text">To be Picked By: {{ s.to_change_user }}</p>
                     <p class="list-group-item-text">Waiting for approval</p>
@@ -98,6 +101,12 @@
         $(function () {
             $('.agree-swap').click(function () {
                 $.post('{% url 'dashboard:agree_swap' %}', {'id': $(this).data('id'), 'to_id': $(this).data('to-id')}, function () {
+                    location.reload();
+                });
+            });
+
+            $('.reject-swap').click(function () {
+                $.post('{% url 'dashboard:reject_swap' %}', {'id': $(this).data('id'), 'to_id': $(this).data('to-id')}, function () {
                     location.reload();
                 });
             });

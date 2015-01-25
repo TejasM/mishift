@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+    <link href="{{ STATIC_URL }}css/jquery.datetimepicker.css" rel="stylesheet">
+{% endblock %}
+{% block page_title %}Swap Pool{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-lg-6 col-lg-offset-3 text-center">
+            <h2>Previous Swaps</h2>
+
+            <div class="collapse" id="collapseExample">
+                <div class="list-group">
+                    {% for s in previous_swaps %}
+                        <div class="list-group-item">
+                            <div class="row-action-primary">
+                                <i>{{ s.event.event_text }}</i>
+                            </div>
+                            <div class="row-content">
+                                <div class="action-secondary"><i class="mdi-material-info"></i></div>
+                                <h4 class="list-group-item-heading">From: {{ s.from_user.get_full_name }}</h4>
+
+                                <p class="list-group-item-heading">To: {{ s.to_user.get_full_name }}</p>
+
+                                <p class="list-group-item-heading">Approved Date: {{ s.approve_time|date:'Y-m-d H:i' }}</p>
+                            </div>
+                        </div>
+                        <div class="list-group-separator"></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
