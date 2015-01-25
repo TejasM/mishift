@@ -99,7 +99,7 @@ def swap_page(request):
     context = {}
     events = Event.objects.filter(belongs_to__userprofile__organization=request.user.userprofile.organization)
     if request.user.userprofile.is_admin:
-        potential_agreed_swaps = list(events.filter(~Q(agreed_swap=None)))
+        potential_agreed_swaps = list(events.filter(~Q(agreed_swap=None)).filter(requested_swap=True))
         agreed_swaps = set()
         for s in potential_agreed_swaps:
             if s.agreed_swap.agreed_swap == s and s not in agreed_swaps:
