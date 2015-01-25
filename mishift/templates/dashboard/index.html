@@ -222,7 +222,7 @@
                             if (event.user_id == {{ user.id }}) {
                                 $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-notification-sync give swapped"></i></span>');
                             } else {
-                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-notification-sync recieve swapped"></i></span>');
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-notification-sync recieve"></i></span>');
                             }
                         }
 
@@ -234,7 +234,7 @@
                             if (event.user_id == {{ user.id }}) {
                                 $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-id="' + event.id + '" class="mdi-communication-call-made swapped give"></i></span>');
                             } else {
-                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-received recieve"></i></span>');
+                                $(element).find('.fc-title').after('<span class="fc-options"><i data-user-id="' + event.user_id + '" data-text="' + event.title + ': ' + event.start.format('h:mm a') + ' - ' + event.end.format('h:mm a') + '" data-id="' + event.id + '" class="mdi-communication-call-made recieve"></i></span>');
                             }
                         }
                         $(element).find('.fc-title').after('<br>');
