@@ -240,7 +240,7 @@ def approve_swap(request):
         to_e.save()
         e.save()
         PreviousTransfers.objects.create(from_user=e.belongs_to, to_user=to_e.belongs_to, event=e)
-        PreviousTransfers.objects.create(from_user=to_e.belongs_to, to_user=to_e.belongs_to, event=e)
+        PreviousTransfers.objects.create(from_user=to_e.belongs_to, to_user=e.belongs_to, event=e)
     return HttpResponse()
 
 
