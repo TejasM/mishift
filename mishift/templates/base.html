@@ -102,9 +102,15 @@
 
         {% block content %}
             <div class="text-center">
-                <a href="{% url 'dashboard:signup' %}">
-                    <button class="btn btn-primary">GET STARTED</button>
-                </a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard:main' %}">
+                        <button class="btn btn-primary">GET STARTED</button>
+                    </a>
+                {% else %}
+                    <a href="{% url 'dashboard:signup' %}">
+                        <button class="btn btn-primary">GET STARTED</button>
+                    </a>
+                {% endif %}
             </div>
         {% endblock content %}
 
