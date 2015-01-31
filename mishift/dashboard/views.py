@@ -6,12 +6,16 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.mail import EmailMessage
 from django.core.urlresolvers import reverse
 from django.db import DataError, IntegrityError
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.template import Context
+from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 import xlrd
 
 from models import UserProfile, Event, legend_hr, PreviousTransfers
@@ -105,7 +109,7 @@ def swap_page(request):
             if s.id not in agreed_swaps and s.agreed_swap.id not in agreed_swaps:
                 agreed_swaps.add(s.id)
         context['agreed_swaps'] = Event.objects.filter(pk__in=list(agreed_swaps))
-        context['agreed_transfers'] = events.filter(requested_transfer=True).filter(~Q(to_change_user=None))
+        context['agreed_transfers'] = events.filter(requested_transfer=True)
         return render(request, 'dashboard/swap_admin.html', context)
     else:
         my_shifts = events.filter(belongs_to=request.user)
@@ -188,6 +192,7 @@ def to_swap(request):
         event_id = request.POST['id']
         e = Event.objects.get(pk=event_id)
         e.requested_swap = not e.requested_swap
+        e.swap_request_time = timezone.now()
         e.save()
     return HttpResponse()
 
@@ -204,6 +209,11 @@ def pick_swap(request):
         to_event.save()
         e.to_swap_events.add(to_event)
         e.save()
+        t = get_template('email/swap_suggestions.html')
+        content = t.render(Context({'user': e.belongs_to.get_full_name(), 'shift': to_event}))
+        msg = EmailMessage(subject='New Swap Suggestion', body=content, from_email='info@mishift.ca',
+                           to=[to_event.belongs_to.email])
+        msg.send()
     return HttpResponse()
 
 
@@ -262,6 +272,15 @@ def approve_swap(request):
         to_e.to_swap_events = set()
         to_e.save()
         e.save()
+        t = get_template('email/approved_swaps.html')
+        content = t.render(Context({'user': e.belongs_to.get_full_name(), 'shift': e, 'swap_2': to_e}))
+        msg = EmailMessage(subject='Transfer Picked up', body=content, from_email='info@mishift.ca',
+                           to=[e.belongs_to.email])
+        msg.send()
+        content = t.render(Context({'user': to_e.belongs_to.get_full_name(), 'shift': e, 'swap_2': to_e}))
+        msg = EmailMessage(subject='Transfer Picked up', body=content, from_email='info@mishift.ca',
+                           to=[e.belongs_to.email])
+        msg.send()
         PreviousTransfers.objects.create(from_user=e.belongs_to, to_user=to_e.belongs_to, event=e)
         PreviousTransfers.objects.create(from_user=to_e.belongs_to, to_user=e.belongs_to, event=e)
     return HttpResponse()
@@ -274,6 +293,7 @@ def to_transfer(request):
         e = Event.objects.get(pk=event_id)
         e.requested_transfer = not e.requested_transfer
         e.to_change_user = None
+        e.transfer_request_time = timezone.now()
         e.save()
     return HttpResponse()
 
@@ -283,7 +303,12 @@ def pick_transfer(request):
     if request.method == "POST":
         event_id = request.POST['id']
         e = Event.objects.get(pk=event_id)
-        e.to_change_user = request.user
+        e.to_transfer_events.add(request.user)
+        t = get_template('email/transfer_suggestions.html')
+        content = t.render(Context({'user': e.belongs_to.get_full_name(), 'shift': e}))
+        msg = EmailMessage(subject='New Transfer Suggestion', body=content, from_email='info@mishift.ca',
+                           to=[e.belongs_to.email])
+        msg.send()
         e.save()
     return HttpResponse()
 
@@ -305,11 +330,22 @@ def approve_transfer(request):
     if request.method == "POST":
         event_id = request.POST['id']
         e = Event.objects.get(pk=event_id)
-        new_belongs_to = e.to_change_user
+        user = User.objects.get(pk=request.POST['user_id'])
+        e.to_transfer_events = set()
+        new_belongs_to = user
         prev_belong = e.belongs_to
         e.belongs_to = new_belongs_to
         e.requested_transfer = False
-        e.to_change_user = None
+        e.save()
+        t = get_template('email/approved_transfers.html')
+        content = t.render(Context({'user': e.belongs_to.get_full_name(), 'shift': e, 'you_picked': True}))
+        msg = EmailMessage(subject='Transfer Picked up', body=content, from_email='info@mishift.ca',
+                           to=[e.belongs_to.email])
+        msg.send()
+        content = t.render(Context({'user': prev_belong.get_full_name(), 'shift': e, 'you_picked': False}))
+        msg = EmailMessage(subject='Transfer Picked up', body=content, from_email='info@mishift.ca',
+                           to=[e.belongs_to.email])
+        msg.send()
         e.save()
         PreviousTransfers.objects.create(from_user=prev_belong, to_user=e.belongs_to, event=e)
     return HttpResponse()

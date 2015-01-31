@@ -52,14 +52,18 @@
                             <div class="action-secondary"><i class="mdi-material-info"></i></div>
                             <h3>Transfer of:</h3>
                             <h4 class="list-group-item-heading">{{ s.event_text }}</h4>
+                            {% for a in s.to_transfer_events.all %}
+                                <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
+                                    - {{ s.end_date|date:'Y-m-d H:i' }}</p>
+                                <h4>from {{ s.belongs_to.get_full_name }} to {{ a.get_full_name }}</h4>
+                                <button class="btn btn-success approve-transfer" data-id="{{ s.id }}"
+                                        data-userid="{{ a.id }}">Approve Transfer
+                                </button>
+                                <button class="btn btn-danger cancel-transfer" data-id="{{ s.id }}"
+                                        data-user-id="{{ a.id }}">Reject Transfer
+                                </button>
+                            {% endfor %}
 
-                            <p class="list-group-item-text">{{ s.start_date|date:'Y-m-d H:i' }}
-                                - {{ s.end_date|date:'Y-m-d H:i' }}</p>
-                            <h4>from {{ s.belongs_to.get_full_name }} to {{ s.to_change_user.get_full_name }}</h4>
-                            <button class="btn btn-success approve-transfer" data-id="{{ s.id }}">Approve Transfer
-                            </button>
-                            <button class="btn btn-danger cancel-transfer" data-id="{{ s.id }}">Reject Transfer
-                            </button>
                         </div>
                     </div>
                     {% if not forloop.last %}
@@ -80,7 +84,7 @@
                 });
             });
             $('.approve-transfer').click(function () {
-                $.post('{% url 'dashboard:approve_transfer' %}', {'id': $(this).data('id')}, function () {
+                $.post('{% url 'dashboard:approve_transfer' %}', {'id': $(this).data('id'), 'user_id': $(this).data('userid')}, function () {
                     location.reload();
                 });
             });

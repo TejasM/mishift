@@ -85,12 +85,10 @@
         {% endfor %}
         {% for s in my_transfers %}
             <div class="tab-pane fade {% if forloop.first and not my_swaps %}active in{% endif %}" id="swap-{{ s.id }}">
-                {% if s.to_change_user %}
-                    <p class="list-group-item-text">To be Picked By: {{ s.to_change_user }}</p>
+                {% for a in s.to_transfer_events.all %}
+                    <p class="list-group-item-text">To be Picked By: {{ a.get_full_name }}</p>
                     <p class="list-group-item-text">Waiting for approval</p>
-                {% else %}
-                    <p class="list-group-item-text">No Offered Transfers</p>
-                {% endif %}
+                {% endfor %}
             </div>
         {% endfor %}
     </div>

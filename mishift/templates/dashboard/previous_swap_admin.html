@@ -14,6 +14,8 @@
                         </div>
                         <div class="row-content">
                             <div class="action-secondary"><i class="mdi-material-info"></i></div>
+                            <p class="list-group-item-heading">{{ s.event.start_date|date:'Y-m-d H:i' }}
+                                - {{ s.event.end_date|date:'Y-m-d H:i' }}</p>
                             <h4 class="list-group-item-heading">From: {{ s.from_user.get_full_name }}</h4>
 
                             <p class="list-group-item-heading">To: {{ s.to_user.get_full_name }}</p>

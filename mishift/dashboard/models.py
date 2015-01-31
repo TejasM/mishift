@@ -5,7 +5,7 @@ from django.utils import timezone
 
 
 class Event(models.Model):
-    belongs_to = models.ForeignKey(User, related_name='my_events')
+    belongs_to = models.ForeignKey(User, related_name='my_events', null=True, blank=True, default=None)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(default=timezone.now)
     event_text = models.TextField(default='')
@@ -14,15 +14,23 @@ class Event(models.Model):
     agreed_swap = models.ForeignKey('Event', related_name='to_swap_agree', default=None, null=True, blank=True)
     approved_swap = models.BooleanField(default=False)
 
+    swap_request_time = models.DateTimeField(default=None, null=True, blank=True)
+    transfer_request_time = models.DateTimeField(default=None, null=True, blank=True)
+
     requested_transfer = models.BooleanField(default=False)
     approved_transfer = models.BooleanField(default=False)
 
     to_swap_events = models.ManyToManyField('Event', default=None, null=True, blank=True)
+    to_transfer_events = models.ManyToManyField(User, related_name='to_pickup_events', default=None, null=True,
+                                                blank=True)
     to_change_user = models.ForeignKey(User, related_name='transfer_events', default=None, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.event_text + ' - ' + self.belongs_to.get_full_name()
 
     @property
     def transfer_check(self):
-        return self.requested_transfer and not self.to_change_user
+        return self.requested_transfer
 
     def json(self):
         return {

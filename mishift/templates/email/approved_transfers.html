@@ -1,0 +1,26 @@
+{% extends 'email/base.html' %}
+{% block content %}
+    {% if you_picked %}
+        <p>Your request to pick up {{ shift }} has be approved.</p>
+
+        <table>
+            <tr>
+                <td class="padding">
+                    <p><a href="http://mishit.ca/login"
+                          class="btn-primary">Login To View Your Calendar</a></p>
+                </td>
+            </tr>
+        </table>
+    {% else %}
+        <p>Your transfer for {{ shift }} has been picked up and approved.</p>
+
+        <table>
+            <tr>
+                <td class="padding">
+                    <p><a href="http://mishit.ca/login"
+                          class="btn-primary">Login To View Your Calendar</a></p>
+                </td>
+            </tr>
+        </table>
+    {% endif %}
+{% endblock %}

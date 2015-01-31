@@ -1,0 +1,13 @@
+{% extends 'email/base.html' %}
+{% block content %}
+    <p>Your have a new suggestion for a transfer for your shift {{ shift }}.</p>
+
+    <table>
+        <tr>
+            <td class="padding">
+                <p><a href="http://mishit.ca/login"
+                      class="btn-primary">Login To View Suggestions</a></p>
+            </td>
+        </tr>
+    </table>
+{% endblock %}
