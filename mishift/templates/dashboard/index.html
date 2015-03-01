@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block extra_css %}
     <link href="{{ STATIC_URL }}css/jquery.datetimepicker.css" rel="stylesheet">
+    <link href="{{ STATIC_URL }}css/introjs.min.css" rel="stylesheet">
 {% endblock %}
 {% block outside_container %}
     {% if user.userprofile.is_admin %}
@@ -400,4 +401,86 @@
         });
     }
     </script>
+    {% if True %}
+        <script src="{{ STATIC_URL }}js/intro.min.js"></script>
+        <script>
+            function startIntro() {
+                var intro = introJs();
+                {% if user.userprofile.is_admin %}
+                    intro.setOptions({
+                        steps: [
+                            {
+
+                                intro: "Hello! Welcome to MiShift a Canadian Nurse Scheduling Platform"
+                            },
+                            {
+                                element: document.querySelector('#calendar'),
+                                intro: "The calender shows you the organizations shifts. As an admin you view details for each one and edit each one by clicking it."
+                            },
+                            {
+                                element: document.querySelectorAll('#calendar > div.fc-view-container > div > table > tbody > tr > td > div > div > div:nth-child(1) > div.fc-bg > table > tbody > tr > td.fc-day.fc-widget-content.fc-sun.fc-today.fc-state-highlight > p')[0],
+                                intro: "As admin, you can add more shifts to any of the days. We can even build in custom rules to make sure you always have enough and the right staff on shift.",
+                                position: 'right'
+                            },
+                            {
+                                element: 'body > div.navbar.navbar-inverse.navbar-fixed-top > div > div.collapse.navbar-collapse > ul > li:nth-child(2) > a',
+                                intro: "In the swap pool you can see all the shifts that have been agreed to be swapped by the organization's staff",
+                                position: 'bottom'
+                            },
+                            {
+                                element: 'body > div.navbar.navbar-inverse.navbar-fixed-top > div > div.collapse.navbar-collapse > ul > li:nth-child(3) > a',
+                                intro: "Here you can see your previously approved swaps.",
+                                position: 'bottom'
+                            },
+                            {
+                                element: '#export-from',
+                                intro: 'Lastly, you can import your excel based shifts with a click of a button.'
+                            },
+                            {
+                                intro: 'Once again welcome to MiShift and have a productive shift management experience!'
+                            }
+                        ]
+                    });
+                {% else %}
+                    intro.setOptions({
+                        steps: [
+                            {
+                                intro: "Hello! Welcome to MiShift a Canadian Nurse Scheduling Platform"
+                            },
+                            {
+                                element: document.querySelector('#calendar'),
+                                intro: "The calender shows your shifts. You can click on the To Swap Icon to put up your shift for swap. And the diagonal arrow icon to put a shift up for transfer. Once you have done so you will receive notifications and emails to let you know the status of the swap."
+                            },
+                            {
+                                element: 'body > div.navbar.navbar-inverse.navbar-fixed-top > div > div.collapse.navbar-collapse > ul > li:nth-child(1) > a',
+                                intro: "You can view the shifts of the full organization by clicking on organization shifts.",
+                                position: 'bottom'
+                            },
+                            {
+                                element: 'body > div.navbar.navbar-inverse.navbar-fixed-top > div > div.collapse.navbar-collapse > ul > li:nth-child(3) > a',
+                                intro: "In MiSwaps you can see all the status shifts you have put for swap or transfer and approve swap requests or pickup requests from other employees",
+                                position: 'bottom'
+                            },
+                            {
+                                element: 'body > div.navbar.navbar-inverse.navbar-fixed-top > div > div.collapse.navbar-collapse > ul > li:nth-child(4) > a',
+                                intro: "In posted shifts you can see the shifts other members of the organization have put up and suggest swaps or pickups for those shifts",
+                                position: 'bottom'
+                            },
+                            {
+                                intro: 'Once again welcome to MiShift and have a productive shift management experience!'
+                            }
+                        ]
+                    });
+                {% endif %}
+
+                intro.start();
+                $.get('{% url 'dashboard:first_time' %}');
+
+            }
+
+            $(function () {
+                startIntro();
+            });
+        </script>
+    {% endif %}
 {% endblock %}

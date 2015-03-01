@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from django.db import DataError, IntegrityError
 from django.db.models import Q
 from django.http import HttpResponse
+from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from django.template import Context
 from django.template.loader import get_template
@@ -360,6 +361,14 @@ def import_events(request):
     return redirect(reverse('dashboard:main'))
 
 
+@login_required()
+@csrf_exempt
+def first_time(request):
+    request.user.userprofile.first_time = False
+    request.user.userprofile.save()
+    return JsonResponse({})
+
+
 def add_events_from(f):
     events = xlrd.open_workbook(file_contents=f)
     sheet = events.sheet_by_index(0)
@@ -375,13 +384,13 @@ def add_events_from(f):
             # except User.DoesNotExist:
             # pass
             try:
-                u = User.objects.get(username='employee' + str(i - 5) + '@employee.com')
+                u = User.objects.get(username='nurse' + str(i - 5) + '@employee.com')
             except User.DoesNotExist:
-                u = User.objects.create(first_name='Employee', last_name=str(i - 5),
-                                        email='employee' + str(i - 5) + '@employee.com',
-                                        username='employee' + str(i - 5) + '@employee.com')
+                u = User.objects.create(first_name='nurse', last_name=str(i - 5),
+                                        email='nurse' + str(i - 5) + '@employee.com',
+                                        username='nurse' + str(i - 5) + '@employee.com')
                 UserProfile.objects.create(user=u, organization='UHN', qualification='RN')
-                u.set_password('employee' + str(i - 5))
+                u.set_password('nurse' + str(i - 5))
                 u.save()
             employees.append(u)
     year = sheet.cell_value(1, 1)

@@ -54,7 +54,7 @@ body {
     color: green;
 }
 
-.fc-day-grid-event>.fc-content {
+.fc-day-grid-event > .fc-content {
     white-space: normal;
 }
 
@@ -73,6 +73,10 @@ body {
     overflow-y: auto;
 }
 
-.fc-day-grid-event>.fc-content {
+.fc-day-grid-event > .fc-content {
     white-space: normal;
+}
+
+.introjs-helperNumberLayer {
+    line-height: 9px !important;
 }

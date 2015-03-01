@@ -56,6 +56,7 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=140, default='employee')
     qualification = models.CharField(max_length=140, default='RN')
     organization = models.CharField(max_length=140, default='UHN')
+    first_time = models.BooleanField(default=True)
 
     @property
     def is_admin(self):

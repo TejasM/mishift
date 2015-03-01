@@ -13,6 +13,7 @@ urlpatterns = patterns('',
                        url(r'^previous_swap/$', views.previous_swap_page, name='previous_swap_page'),
 
                        url(r'^create_event/$', views.create_event, name='event'),
+                       url(r'^first_time/$', views.first_time, name='first_time'),
                        url(r'^import_events/$', views.import_events, name='import_events'),
 
                        url(r'^to_swap/$', views.to_swap, name='to_swap'),
