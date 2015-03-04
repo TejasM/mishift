@@ -384,12 +384,12 @@ def add_events_from(f):
             # except User.DoesNotExist:
             # pass
             try:
-                u = User.objects.get(username='nurse' + str(i - 5) + '@employee.com')
+                u = User.objects.get(username='nurse' + str(i - 5) + '@lhs.com')
             except User.DoesNotExist:
                 u = User.objects.create(first_name='nurse', last_name=str(i - 5),
-                                        email='nurse' + str(i - 5) + '@employee.com',
-                                        username='nurse' + str(i - 5) + '@employee.com')
-                UserProfile.objects.create(user=u, organization='UHN', qualification='RN')
+                                        email='nurse' + str(i - 5) + '@lhs.com',
+                                        username='nurse' + str(i - 5) + '@lhs.com')
+                UserProfile.objects.create(user=u, organization='LHS', qualification='RN')
                 u.set_password('nurse' + str(i - 5))
                 u.save()
             employees.append(u)
