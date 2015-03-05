@@ -14,8 +14,8 @@ class Event(models.Model):
     agreed_swap = models.ForeignKey('Event', related_name='to_swap_agree', default=None, null=True, blank=True)
     approved_swap = models.BooleanField(default=False)
 
-    swap_request_time = models.DateTimeField(default=None, null=True, blank=True)
-    transfer_request_time = models.DateTimeField(default=None, null=True, blank=True)
+    #swap_request_time = models.DateTimeField(default=None, null=True, blank=True)
+    #transfer_request_time = models.DateTimeField(default=None, null=True, blank=True)
 
     requested_transfer = models.BooleanField(default=False)
     approved_transfer = models.BooleanField(default=False)
@@ -56,7 +56,7 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=140, default='employee')
     qualification = models.CharField(max_length=140, default='RN')
     organization = models.CharField(max_length=140, default='UHN')
-    first_time = models.BooleanField(default=True)
+    #first_time = models.BooleanField(default=True)
 
     @property
     def is_admin(self):
