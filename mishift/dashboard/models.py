@@ -21,8 +21,8 @@ class Event(models.Model):
     approved_transfer = models.BooleanField(default=False)
 
     to_swap_events = models.ManyToManyField('Event', default=None, null=True, blank=True)
-    #to_transfer_events = models.ManyToManyField(User, related_name='to_pickup_events', default=None, null=True,
-      #                                          blank=True)
+    to_transfer_events = models.ManyToManyField(User, related_name='to_pickup_events', default=None, null=True,
+                                                blank=True)
     to_change_user = models.ForeignKey(User, related_name='transfer_events', default=None, null=True, blank=True)
 
     def __unicode__(self):
