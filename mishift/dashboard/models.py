@@ -14,7 +14,7 @@ class Event(models.Model):
     agreed_swap = models.ForeignKey('Event', related_name='to_swap_agree', default=None, null=True, blank=True)
     approved_swap = models.BooleanField(default=False)
 
-    #swap_request_time = models.DateTimeField(default=None, null=True, blank=True)
+    swap_request_time = models.DateTimeField(default=None, null=True, blank=True)
     transfer_request_time = models.DateTimeField(default=None, null=True, blank=True)
 
     requested_transfer = models.BooleanField(default=False)
