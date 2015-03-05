@@ -401,7 +401,7 @@
         });
     }
     </script>
-    {% if True %}
+    {% if user.userprofile.first_time %}
         <script src="{{ STATIC_URL }}js/intro.min.js"></script>
         <script>
             function startIntro() {
